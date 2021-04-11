@@ -70,7 +70,12 @@ let
         HasAlpha = HasAlpha,
         PixelArraySize = PixelArraySize,
         PixelArray = PixelArray,
-        PixelValues = PixelValues
+        PixelValues = PixelValues,
+        AllPixels = AllPixels,
+        RedFromValue = RedFromValue,
+        GreenFromValue = GreenFromValue,
+        BlueFromValue = BlueFromValue,
+        AlphaFromValue = AlphaFromValue
     ],
     PixelValues1 = AsRecord[PixelValues],
     #"Converted to Table" = Table.FromList(PixelValues1, Splitter.SplitByNothing(), null, null, ExtraValues.Error),
