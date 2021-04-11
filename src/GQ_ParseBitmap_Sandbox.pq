@@ -29,6 +29,10 @@ let
     PixelArray = Binary.Range(bitmap, PixelArrayOffset, PixelArraySize),
     ReadPixelArray = BinaryFormat.List(BinaryFormat.Binary(BytesPerPixel)),
     PixelValues = ReadPixelArray(PixelArray),
+    BlueFromValue  = (value as binary) => BinaryFormat.Byte(Binary.Range(value, 0, 1)),
+    GreenFromValue = (value as binary) => BinaryFormat.Byte(Binary.Range(value, 1, 1)),
+    RedFromValue   = (value as binary) => BinaryFormat.Byte(Binary.Range(value, 2, 1)),
+    AlphaFromValue = (value as binary) => BinaryFormat.Byte(Binary.Range(value, 3, 1)),
     
     AsRecord = 
     [
@@ -44,10 +48,16 @@ let
         PixelArraySize = PixelArraySize,
         PixelArray = PixelArray,
         PixelValues = PixelValues
-    ]    
-    
+    ],
+    PixelValues1 = AsRecord[PixelValues],
+    #"Converted to Table" = Table.FromList(PixelValues1, Splitter.SplitByNothing(), null, null, ExtraValues.Error),
+    #"Renamed Columns" = Table.RenameColumns(#"Converted to Table",{{"Column1", "Value"}}),
+    #"Added Custom" = Table.AddColumn(#"Renamed Columns", "Red", each RedFromValue([Value])),
+    #"Added Custom1" = Table.AddColumn(#"Added Custom", "Green", each GreenFromValue([Value])),
+    #"Added Custom2" = Table.AddColumn(#"Added Custom1", "Blue", each BlueFromValue([Value])),
+    #"Added Custom3" = Table.AddColumn(#"Added Custom2", "Alpha", each AlphaFromValue([Value]))
 in
-    AsRecord
+    #"Added Custom3"
 
 //in
 //    ParseBitmap
