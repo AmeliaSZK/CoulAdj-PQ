@@ -23,6 +23,7 @@ let
             RemovedEndsAtTopStart
         else
             RemovedEndsBeforeTopStart,
-    #"Removed Other Columns" = Table.SelectColumns(AdjacentTopNeighbours,{"value", "Top.value"})
+    #"Removed Other Columns" = Table.SelectColumns(AdjacentTopNeighbours,{"value", "Top.value"}),
+    #"Renamed Columns" = Table.RenameColumns(#"Removed Other Columns",{{"Top.value", "adj_value"}})
 in
-    #"Removed Other Columns"
+    #"Renamed Columns"
