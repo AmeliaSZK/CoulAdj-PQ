@@ -47,13 +47,15 @@ let
     [
         Width = Width,
         Height = Height,
+        NbRows = Height,
+        NbCols = Width,
+        MaxRowIndex = NbRows - 1,
+        MaxColIndex = NbCols - 1,
         BytesPerPixel = BytesPerPixel,
-        NbOfPixels = NbOfPixels,
+        NbPixels = NbOfPixels,
+        HasAlpha = (BytesPerPixel = 4),
         PixelArraySize = PixelArraySize,
-        PixelArray = PixelArray,
-        WidthMinusOne = Width - 1,
-        HeightMinusOne = Height - 1,
-        HasAlpha = (BytesPerPixel = 4)
+        PixelArray = PixelArray
     ]    
     
 in
