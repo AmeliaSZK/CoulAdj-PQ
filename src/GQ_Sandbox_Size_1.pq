@@ -1,25 +1,11 @@
 let
     Source = GQ_ParseBitmap(GQ_TB_Binary_Size_1),
-    PixelArray = Source[PixelArray],
-    NbBytesToSkip = Source[BytesPerPixel] - 1,
-    NbBytesToKeep = 1,
-    FirstSkippedByteIndex = 1, // This way, byte at index 0 is always kept
-    BluOffset = 0, 
-    GreOffset = 1,
-    RedOffset = 2,
-    AlpOffset = 3,
-    BluChannel = List.Alternate(List.Skip(PixelArray, BluOffset), NbBytesToSkip, NbBytesToKeep, FirstSkippedByteIndex),
-    GreChannel = List.Alternate(List.Skip(PixelArray, GreOffset), NbBytesToSkip, NbBytesToKeep, FirstSkippedByteIndex),
-    RedChannel = List.Alternate(List.Skip(PixelArray, RedOffset), NbBytesToSkip, NbBytesToKeep, FirstSkippedByteIndex),
-    AlpChannel = List.Alternate(List.Skip(PixelArray, AlpOffset), NbBytesToSkip, NbBytesToKeep, FirstSkippedByteIndex),
-    RowIndices = List.Reverse({0..Source[MaxRowIndex]}), // Format specs say bottom row comes first
-    ColIndices = {0..Source[MaxColIndex]},
-    IndicesAsTable = Table.FromColumns({{RowIndices}, {ColIndices}}, {"Row", "Col"}),
-    ExpandedRowIndices = Table.ExpandListColumn(IndicesAsTable, "Row"),
-    ExpandedColIndices = Table.ExpandListColumn(ExpandedRowIndices, "Col"),
-    AllRowIndices = Table.Column(ExpandedColIndices, "Row"),
-    AllColIndices = Table.Column(ExpandedColIndices, "Col"),
-    AsTable = Table.FromColumns({AllRowIndices, AllColIndices, RedChannel, GreChannel, BluChannel, AlpChannel}, type table[row = Int64.Type, col = Int64.Type, r = Int64.Type, g = Int64.Type, b = Int64.Type, a = Int64.Type]),
-    #"Sorted Rows" = Table.Sort(AsTable,{{"row", Order.Ascending}, {"col", Order.Ascending}})
+    PixelArray = Source[AllPixels],
+    #"Added [r]" = Table.AddColumn(PixelArray, "r", each Source[RedFromValue]([value]), Int64.Type),
+    #"Added [g]" = Table.AddColumn(#"Added [r]", "g", each Source[GreenFromValue]([value]), Int64.Type),
+    #"Added [b]" = Table.AddColumn(#"Added [g]", "b", each Source[BlueFromValue]([value]), Int64.Type),
+    #"Added [a]" = Table.AddColumn(#"Added [b]", "a", each Source[AlphaFromValue]([value]), Int64.Type),
+    #"Removed Columns" = Table.RemoveColumns(#"Added [a]",{"value"}),
+    #"Sorted Rows" = Table.Sort(#"Removed Columns",{{"row", Order.Ascending}, {"col", Order.Ascending}})
 in
     #"Sorted Rows"
