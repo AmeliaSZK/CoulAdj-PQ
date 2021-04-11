@@ -1,7 +1,6 @@
 let
     DontRelateDiagonals = false,
-    Source = GQ_ParseBitmap(GQ_TB_Binary_Size_1),
-    RLEncoded = Table.Buffer(GQ_EncodeRunLength(Source[AllPixels])),
+    RLEncoded = GQ_Sandbox_Size_1_RLE_Base,
     #"Added Custom" = Table.AddColumn(RLEncoded, "Top", each RLEncoded, type table[row = Int64.Type, value = binary, Start = Int64.Type, End = Int64.Type]),
     #"Expanded {0}" = Table.ExpandTableColumn(#"Added Custom", "Top", {"row", "value", "Start", "End"}, {"Top.row", "Top.value", "Top.Start", "Top.End"}),
     KeptTopRows = Table.SelectRows(#"Expanded {0}", each [Top.row] = [row] - 1),
@@ -24,6 +23,10 @@ let
         else
             RemovedEndsBeforeTopStart,
     #"Removed Other Columns" = Table.SelectColumns(AdjacentTopNeighbours,{"value", "Top.value"}),
-    #"Renamed Columns" = Table.RenameColumns(#"Removed Other Columns",{{"Top.value", "adj_value"}})
+    #"Renamed Columns" = Table.RenameColumns(#"Removed Other Columns",{{"Top.value", "adj_value"}}),
+    #"Added Custom1" = Table.AddColumn(#"Renamed Columns", "value1", each List.Min({[value], [adj_value]}), type binary),
+    #"Added Custom2" = Table.AddColumn(#"Added Custom1", "value2", each List.Max({[value], [adj_value]}), type binary),
+    #"Removed Other Columns1" = Table.SelectColumns(#"Added Custom2",{"value1", "value2"}),
+    #"Removed Duplicates" = Table.Distinct(#"Removed Other Columns1")
 in
-    #"Renamed Columns"
+    #"Removed Duplicates"
