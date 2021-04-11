@@ -20,7 +20,7 @@ bigger than the actual sample.
 
 Actual size: ![sample-1](sample-size-1.png)
 
-NB: In all samples, the top-right cell was made to always be 1 by 1 pixel.
+NB: In all samples, the top-right red square was made to always be 1 by 1 pixel.
 This is why you can hardly see the red in the top-right when looking at the bigger
 samples.
 
@@ -51,7 +51,6 @@ The included sizes are:
 |  128 |  1152 |   1024 |  1,179,648 |
 |  256 |  2304 |   2048 |  4,718,592 |
 |  **512** |  **4608** |   **4096** | **18,874,368** | Yes |
-| 1024 |  9216 |   8192 | 75,497,472 |
 
 
 The high quantity of sizes is meant to verify if the implementation went
