@@ -1,4 +1,5 @@
 let
-    Source = GQ_ParseBitmap(GQ_TB_Binary_Size_1)
+    Source = GQ_ParseBitmap(GQ_TB_Binary_Size_1),
+    #"Converted to Table" = Record.ToTable(Source)
 in
-    Source
+    #"Converted to Table"
