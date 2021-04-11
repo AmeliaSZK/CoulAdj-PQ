@@ -23,28 +23,51 @@ let
     NbOfPixels           = ReadUint32LE(Binary.Range(bitmap, 34, 4)),
     PixelArrayOffset     = ReadUint32LE(Binary.Range(bitmap, 10, 4)),
     PixelArraySize       = NbOfPixels * BytesPerPixel,
+    HasAlpha             = (BytesPerPixel = 4),
+
+    NbRows = Height,
+    NbCols = Width,
+    MaxRow = NbRows - 1,
+    MaxCol = NbCols - 1,
 
     /* Main Data */
     FileBytes = Binary.ToList(bitmap),
     PixelArray = Binary.Range(bitmap, PixelArrayOffset, PixelArraySize),
     ReadPixelArray = BinaryFormat.List(BinaryFormat.Binary(BytesPerPixel)),
     PixelValues = ReadPixelArray(PixelArray),
+
+    /* Conversion Functions */
     BlueFromValue  = (value as binary) => BinaryFormat.Byte(Binary.Range(value, 0, 1)),
     GreenFromValue = (value as binary) => BinaryFormat.Byte(Binary.Range(value, 1, 1)),
     RedFromValue   = (value as binary) => BinaryFormat.Byte(Binary.Range(value, 2, 1)),
-    AlphaFromValue = (value as binary) => BinaryFormat.Byte(Binary.Range(value, 3, 1)),
+    AlphaFromValue = 
+        if HasAlpha then
+            (value as binary) => BinaryFormat.Byte(Binary.Range(value, 3, 1))
+        else
+            (value as binary) => null,
+
+    /* Coordinates */
+    // BMP specs say bottom row comes first
+    RowIndices = List.Numbers(MaxRow, NbRows, -1),
+    ColIndices = List.Numbers(     0, NbCols,  1),
+    AllRowIndices = List.Combine(List.Transform(RowIndices, each List.Repeat({_}, NbCols))),
+    AllColIndices = List.Repeat(ColIndices, NbRows),
+
+    /* As Table */
+    AllPixels = Table.FromColumns({AllRowIndices, AllColIndices, PixelValues}, 
+        type table[row = Int64.Type, col = Int64.Type, value = binary]),
     
     AsRecord = 
     [
         Width = Width,
         Height = Height,
-        NbRows = Height,
-        NbCols = Width,
-        MaxRowIndex = NbRows - 1,
-        MaxColIndex = NbCols - 1,
+        NbRows = NbRows,
+        NbCols = NbCols,
+        MaxRow = MaxRow,
+        MaxCol = MaxCol,
         BytesPerPixel = BytesPerPixel,
         NbPixels = NbOfPixels,
-        HasAlpha = (BytesPerPixel = 4),
+        HasAlpha = HasAlpha,
         PixelArraySize = PixelArraySize,
         PixelArray = PixelArray,
         PixelValues = PixelValues
