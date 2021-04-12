@@ -2,9 +2,13 @@ let
     DontRelateDiagonals = false,
     RLEncoded = GQ_Sandbox_Size_1_RLE_Base,
     #"Added Custom" = Table.AddColumn(RLEncoded, "Top", each RLEncoded, type table[row = Int64.Type, value = binary, Start = Int64.Type, End = Int64.Type]),
-    #"Expanded {0}" = Table.ExpandTableColumn(#"Added Custom", "Top", {"row", "value", "Start", "End"}, {"Top.row", "Top.value", "Top.Start", "Top.End"}),
-    KeptTopRows = Table.SelectRows(#"Expanded {0}", each [Top.row] = [row] - 1),
-    RemovedSameValues = Table.SelectRows(KeptTopRows, each [value] <> [Top.value]),
+    GroupedByRowIndex = Table.Group(RLEncoded, {"row"}, {{"Rows", each _, type table [row = Int64.Type, value = binary, Start = Int64.Type, End = Int64.Type]}}),
+    AllRows = Table.Column(GroupedByRowIndex, "Rows"),
+    AlignedTopRow = Table.FromColumns({AllRows, List.Skip(AllRows)}, {"bottom", "Top"}),
+    RemovedLastRow = Table.RemoveLastN(AlignedTopRow,1),
+    ExpandedBottom = Table.ExpandTableColumn(RemovedLastRow, "bottom", {"row", "value", "Start", "End"}),
+    KeptTopNeighbours = Table.ExpandTableColumn(ExpandedBottom, "Top", {"value", "Start", "End"}, {"Top.value", "Top.Start", "Top.End"}),
+    RemovedSameValues = Table.SelectRows(KeptTopNeighbours, each [value] <> [Top.value]),
 
     // Top Center neighbours 1 of 2
     RemovedTopEndsBeforeStart = Table.SelectRows(RemovedSameValues, each not ([Top.End] < [Start])),
