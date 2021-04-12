@@ -15,3 +15,6 @@ Computes the list of adjacent colours for each colour in an image. Power Query i
 # Potential optimizations
 
 * When generating symmetrical adjacencies, consider using Table.Combine
+* In ProcessSubtables for RightNeighbours, consider doing the min-max & purge there
+* In RightNeighbours, consider purging both before the min-max and after. 
+    * (At the time of writing, we are only purging after)
