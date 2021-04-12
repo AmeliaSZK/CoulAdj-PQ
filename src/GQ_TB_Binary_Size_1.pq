@@ -1,5 +1,5 @@
 let
     Source = GQ_TB_SampleBinaries,
-    sample_size_1 = Source[sample_size_128]
+    sample_size_1 = Source[sample_size_256]
 in
     sample_size_1
