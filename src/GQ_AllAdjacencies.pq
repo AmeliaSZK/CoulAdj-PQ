@@ -1,5 +1,5 @@
 let
-    Source = Table.Buffer(GQ_AllUniqueRelations),
+    Source = GQ_AllUniqueRelations,
 
     Columns = Table.ToColumns(Source),
     Combined = Table.FromColumns({

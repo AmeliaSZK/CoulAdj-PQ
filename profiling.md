@@ -10,7 +10,9 @@
 | Formatted Output     | 7:05 | 0:22 |
 
 
-# All Adjacencies with Table.ToColumns & buffering
+# All Adjacencies with Table.ToColumns 
+
+## With buffering
 
 | Stage         | Cumulative | Alone | Diff |
 |----------------------|------|------|------|
@@ -19,4 +21,15 @@
 | Right Neighbours     |  |  |
 | All Unique Relations |  |  |
 | All Adjacencies      | 7:13 | 2:16 | +30s
+| Formatted Output     |  |  |
+
+## _Without_ buffering
+
+| Stage         | Cumulative | Alone | Diff |
+|----------------------|------|------|------|
+| Run Length Encoding  |  |  |
+| All Top Neighbours   |  |  |
+| Right Neighbours     |  |  |
+| All Unique Relations |  |  |
+| All Adjacencies      | 6:00 | 1:03 | -43s
 | Formatted Output     |  |  |
