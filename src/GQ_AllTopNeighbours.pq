@@ -1,5 +1,5 @@
 let
-    DontRelateDiagonals = false,
+    DontRelateDiagonals = GQ_DontRelateDiagonals,
     RLEncoded = GQ_Result_EncodeRunLength,
 
     /* Align consecutive rows */
