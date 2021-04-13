@@ -11,6 +11,7 @@
 
 
 # All Adjacencies with Table.ToColumns 
+Both compared to _After 1st clean up_
 
 ## With buffering
 
@@ -35,8 +36,9 @@
 | Formatted Output     |  |  |
 
 # Binary Buffering
+Both compared to _All Adjacencies with Table.ToColumns without buffering_
 
-## Buffering source binary image
+## Buffering only source binary image
 
 | Stage         | Cumulative | Alone | Diff |
 |----------------------|------|------|------|
@@ -45,4 +47,15 @@
 | Right Neighbours     |  |  |
 | All Unique Relations |  |  |
 | All Adjacencies      | 6:33 | 1:36 | +33s
+| Formatted Output     |  |  |
+
+## Buffering only binary cell colours
+
+| Stage         | Cumulative | Alone | Diff |
+|----------------------|------|------|------|
+| Run Length Encoding  | 1:08 | 1:08 | +1s
+| All Top Neighbours   |  |  |
+| Right Neighbours     |  |  |
+| All Unique Relations |  |  |
+| All Adjacencies      | 6:23 | 1:26 | +23s
 | Formatted Output     |  |  |
