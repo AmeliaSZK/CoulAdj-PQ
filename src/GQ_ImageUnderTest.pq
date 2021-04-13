@@ -1,5 +1,4 @@
 let
-    ImageName = "sample_size_1",
-    Binary = Record.Field(GQ_TB_ImageBinaries, ImageName)
+    Binary = Record.Field(GQ_TB_ImageBinaries, "sample_size_128")
 in
     Binary
