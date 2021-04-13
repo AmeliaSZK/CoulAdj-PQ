@@ -33,3 +33,16 @@
 | All Unique Relations |  |  |
 | All Adjacencies      | 6:00 | 1:03 | -43s
 | Formatted Output     |  |  |
+
+# Binary Buffering
+
+## Buffering source binary image
+
+| Stage         | Cumulative | Alone | Diff |
+|----------------------|------|------|------|
+| Run Length Encoding  |  |  |
+| All Top Neighbours   |  |  |
+| Right Neighbours     |  |  |
+| All Unique Relations |  |  |
+| All Adjacencies      | 6:33 | 1:36 | +33s
+| Formatted Output     |  |  |
