@@ -1,5 +1,4 @@
 let
-    DontRelateDiagonals = GQ_DontRelateDiagonals,
     RLEncoded = GQ_Result_EncodeRunLength,
 
     /* Group Segments by Row Index */
