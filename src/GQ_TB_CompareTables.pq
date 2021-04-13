@@ -1,7 +1,7 @@
 let
     Source = "",
     table1 = GQ_TB_Golden_SizedSamples,
-    table2 = GQ_Sandbox_Size_1_RLE,
+    table2 = GQ_FormattedOutput,
     Table1_AsRecords = Table.ToRecords(table1),
     Table2_AsRecords = Table.ToRecords(table2),
     AsTable = Table.FromColumns({Table1_AsRecords, Table2_AsRecords}, type table[Table1 = record, Table2 = record]),

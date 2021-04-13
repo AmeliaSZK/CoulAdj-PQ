@@ -8,6 +8,7 @@ let
     HeaderSize           = ReadUint32LE(Binary.Range(bitmap, 14, 4)), // Must be 40
     */
 
+    /* Binary format functions */
     ReadSint32LE = BinaryFormat.ByteOrder(BinaryFormat.SignedInteger32, ByteOrder.LittleEndian),
     ReadSint16LE = BinaryFormat.ByteOrder(BinaryFormat.SignedInteger16, ByteOrder.LittleEndian),
     ReadUint32LE = BinaryFormat.ByteOrder(BinaryFormat.UnsignedInteger32, ByteOrder.LittleEndian),
@@ -35,14 +36,31 @@ let
     PixelValues = ReadPixelArray(PixelArray),
 
     /* Conversion Functions */
-    BlueFromValue  = (value as binary) => BinaryFormat.Byte(Binary.Range(value, 0, 1)),
-    GreenFromValue = (value as binary) => BinaryFormat.Byte(Binary.Range(value, 1, 1)),
-    RedFromValue   = (value as binary) => BinaryFormat.Byte(Binary.Range(value, 2, 1)),
-    AlphaFromValue = 
+    BluFromColour = (colour as binary) => BinaryFormat.Byte(Binary.Range(colour, 0, 1)),
+    GreFromColour = (colour as binary) => BinaryFormat.Byte(Binary.Range(colour, 1, 1)),
+    RedFromColour = (colour as binary) => BinaryFormat.Byte(Binary.Range(colour, 2, 1)),
+    AlpFromColour = 
         if HasAlpha then
-            (value as binary) => BinaryFormat.Byte(Binary.Range(value, 3, 1))
+            (colour as binary) => BinaryFormat.Byte(Binary.Range(colour, 3, 1))
         else
-            (value as binary) => null,
+            (colour as binary) => 255,
+
+    Colour.Type   = type binary,
+    RGB.Type      = type [r = number, g = number, b = number],
+    RgbAlpha.Type = type [r = number, g = number, b = number, a = number],
+
+    RGB.FromColour = (colour as binary) as record => [
+        r = RedFromColour(colour),
+        g = GreFromColour(colour),
+        b = BluFromColour(colour)
+    ],
+    RgbAlpha.FromColour = (colour as binary) as record => [
+        r = RedFromColour(colour),
+        g = GreFromColour(colour),
+        b = BluFromColour(colour),
+        a = AlpFromColour(colour)
+    ],
+
 
     /* Coordinates */
     // BMP specs say bottom row comes first
@@ -53,27 +71,23 @@ let
 
     /* As Table */
     AllPixels = Table.FromColumns({AllRowIndices, AllColIndices, PixelValues}, 
-        type table[row = Int64.Type, col = Int64.Type, value = binary]),
+        type table[row = number, col = number, colour = Colour.Type]),
     
     AsRecord = 
     [
-        Width = Width,
-        Height = Height,
+        //MaxRow = MaxRow,
+        //MaxCol = MaxCol,
+        //BytesPerPixel = BytesPerPixel,
+        NbPixels = NbOfPixels,
         NbRows = NbRows,
         NbCols = NbCols,
-        MaxRow = MaxRow,
-        MaxCol = MaxCol,
-        BytesPerPixel = BytesPerPixel,
-        NbPixels = NbOfPixels,
         HasAlpha = HasAlpha,
-        PixelArraySize = PixelArraySize,
-        PixelArray = PixelArray,
-        PixelValues = PixelValues,
-        AllPixels = AllPixels,
-        RedFromValue = RedFromValue,
-        GreenFromValue = GreenFromValue,
-        BlueFromValue = BlueFromValue,
-        AlphaFromValue = AlphaFromValue
+        PixelArray.AsColours = AllPixels,
+        Colour.Type = Colour.Type,
+        RGB.FromColour = RGB.FromColour,
+        RGB.Type = RGB.Type,
+        RgbAlpha.FromColour = RgbAlpha.FromColour,
+        RgbAlpha.Type = RgbAlpha.Type
     ]
 in
     AsRecord
