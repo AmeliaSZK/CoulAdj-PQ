@@ -8,3 +8,15 @@
 | All Unique Relations | 4:57 | 0:59 |
 | All Adjacencies      | 6:43 | 1:46 |
 | Formatted Output     | 7:05 | 0:22 |
+
+
+# All Adjacencies with Table.ToColumns & buffering
+
+| Stage         | Cumulative | Alone | Diff |
+|----------------------|------|------|------|
+| Run Length Encoding  |  |  |
+| All Top Neighbours   |  |  |
+| Right Neighbours     |  |  |
+| All Unique Relations |  |  |
+| All Adjacencies      | 7:13 | 2:16 | +30s
+| Formatted Output     |  |  |
