@@ -19,5 +19,9 @@ Computes the list of adjacent colours for each colour in an image. Power Query i
 * In RightNeighbours, consider purging both before the min-max and after. 
     * (At the time of writing, we are only purging after)
 * In AllTopNeighbours, consider using 1 statement to keep Top Center neighbours
+* Alpha column? When to remove? Always add? How is the sort affected? Is the sort even long???
+* When grouping by Row Index, considering using GroupKind.Local?
+* In EncodeRunLenght, consider using List.First to get Start?
+* In EncodeRunLenght, consider buffering the binary values?
 
 
