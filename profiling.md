@@ -36,7 +36,7 @@ Both compared to _After 1st clean up_
 | Formatted Output     |  |  |
 
 # Binary Buffering
-Both compared to _All Adjacencies with Table.ToColumns without buffering_
+All compared to _All Adjacencies with Table.ToColumns without buffering_
 
 ## Buffering only source binary image
 
@@ -59,3 +59,18 @@ Both compared to _All Adjacencies with Table.ToColumns without buffering_
 | All Unique Relations |  |  |
 | All Adjacencies      | 6:23 | 1:26 | +23s
 | Formatted Output     |  |  |
+
+## Removed all bufferings
+
+| Stage         | Cumulative | Alone | Diff |
+|----------------------|------|------|------|
+| Run Length Encoding  | 1:07 | 1:07 | 0
+| All Top Neighbours   |  |  |
+| Right Neighbours     |  |  |
+| All Unique Relations |  |  |
+| All Adjacencies      | 7:13 | 2:16 | +1:13s
+| Formatted Output     |  |  |
+
+This is equivalent to All Adjacencies with Table.ToColumns *with* buffering,
+and my hypothesis is that the 6 minutes result benefited from a cache somewhere.
+
