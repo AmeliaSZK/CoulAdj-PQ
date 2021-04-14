@@ -109,5 +109,19 @@ Compared with _After first clean up_
 | Right Neighbours     | 0:22 | 0:11 | -46s
 | All Unique Relations | 1:00 | 0:22 | -37s
 | All Adjacencies      | 1:36 | 0:36 | -1:10
-| Formatted Output     | 2:34 | 1:58 | +1:36
+| Formatted Output     | 2:34 | 0:58 | +1:36
+
+# Others
+
+## Removed sorting of the output
+Compared with _Cleaned-up RLE & full profile_
+
+| Stage         | Cumulative | Alone | Diff |
+|----------------------|------|------|------|
+| Run Length Encoding  |  |  | 
+| All Top Neighbours   |  |  | 
+| Right Neighbours     |  |  | 
+| All Unique Relations |  |  | 
+| All Adjacencies      |  |  | 
+| Formatted Output     | 2:01 | 0:25 | -33s
 

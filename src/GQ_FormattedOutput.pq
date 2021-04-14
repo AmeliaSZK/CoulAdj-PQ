@@ -26,7 +26,7 @@ let
     #"Added Custom1" = Table.AddColumn(#"Added Custom", "adj_decoded", each DecodeColour([adj_colour]), (DecodedType)),
     #"Removed Other Columns" = Table.SelectColumns(#"Added Custom1",{"decoded", "adj_decoded"}),
     #"Expanded {0}" = Table.ExpandRecordColumn(#"Removed Other Columns", "decoded", {"r", "g", "b", "a"}, ColumnNames),
-    #"Expanded {0}1" = Table.ExpandRecordColumn(#"Expanded {0}", "adj_decoded", {"r", "g", "b", "a"}, AdjColumnNames),
-    #"Sorted Rows" = Table.Sort(#"Expanded {0}1",{{"r", Order.Ascending}, {"g", Order.Ascending}, {"b", Order.Ascending}, {"a", Order.Ascending}, {"adj_r", Order.Ascending}, {"adj_g", Order.Ascending}, {"adj_b", Order.Ascending}, {"adj_a", Order.Ascending}})
+    #"Expanded {0}1" = Table.ExpandRecordColumn(#"Expanded {0}", "adj_decoded", {"r", "g", "b", "a"}, AdjColumnNames)
+    //#"Sorted Rows" = Table.Sort(#"Expanded {0}1",{{"r", Order.Ascending}, {"g", Order.Ascending}, {"b", Order.Ascending}, {"a", Order.Ascending}, {"adj_r", Order.Ascending}, {"adj_g", Order.Ascending}, {"adj_b", Order.Ascending}, {"adj_a", Order.Ascending}})
 in
-    #"Sorted Rows"
+    #"Expanded {0}1"
