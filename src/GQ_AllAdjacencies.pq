@@ -1,10 +1,9 @@
 let
     Source = GQ_AllUniqueRelations,
 
-    Columns = Table.ToColumns(Source),
-    Combined = Table.FromColumns({
-            Columns{0} & Columns{1},
-            Columns{1} & Columns{0} 
-        }, type table[colour = binary, adj_colour = binary])
+    #"Added Custom" = Table.AddColumn(Source, "Adjacencies", each Table.FromRecords({[colour=[MinColour], adj_colour=[MaxColour]], [colour=[MaxColour], adj_colour=[MinColour]]}), type table[colour=binary, adj_colour=binary]),
+    #"Removed Other Columns" = Table.SelectColumns(#"Added Custom",{"Adjacencies"}),
+    #"Expanded {0}" = Table.ExpandTableColumn(#"Removed Other Columns", "Adjacencies", {"colour", "adj_colour"}, {"colour", "adj_colour"})
+
 in
-    Combined
+    #"Expanded {0}"

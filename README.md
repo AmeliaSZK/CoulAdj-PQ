@@ -15,6 +15,7 @@ Computes the list of adjacent colours for each colour in an image. Power Query i
 # Potential optimizations
 
 * When generating symmetrical adjacencies, consider using Table.Combine
+    * Done, row-by-row + expansion was faster than combining
 * In ProcessSubtables for RightNeighbours, consider doing the min-max & purge there
     * Done, we went from 2m01s to 1m59s. (So basically noise)
 * In RightNeighbours, consider purging both before the min-max and after. 
