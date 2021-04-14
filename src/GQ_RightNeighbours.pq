@@ -21,9 +21,10 @@ let
 in
     RemovedDuplicates,
     #"Added Custom" = Table.AddColumn(#"Grouped Rows", "ProcessedSegments", each ProcessSubtable([Segments]), type table[MinColour = binary, MaxColour = binary]),
+    #"Filtered Rows" = Table.SelectRows(#"Added Custom", each not (Table.IsEmpty([ProcessedSegments]))),
     
     /* (Boilerplate) Expand & keep consecutives */
-    #"Removed Other Columns1" = Table.SelectColumns(#"Added Custom",{"ProcessedSegments"}),
+    #"Removed Other Columns1" = Table.SelectColumns(#"Filtered Rows",{"ProcessedSegments"}),
     #"Expanded {0}" = Table.ExpandTableColumn(#"Removed Other Columns1", "ProcessedSegments", {"MinColour", "MaxColour"}, {"MinColour", "MaxColour"})
     
 /*
