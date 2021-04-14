@@ -3,7 +3,7 @@ let
 
     /* Group Segments by Row Index */
     #"Removed Other Columns" = Table.SelectColumns(RLEncoded,{"row", "colour"}),
-    #"Grouped Rows" = Table.Group(#"Removed Other Columns", {"row"}, {{"Segments", each _, type table [row = number, colour = binary]}}),
+    #"Grouped Rows" = Table.Group(#"Removed Other Columns", {"row"}, {{"Segments", each _, type table [row = number, colour = binary]}}, GroupKind.Local),
 
     /* Join consecutive segments */
     ProcessSubtable = (table as table) as table =>

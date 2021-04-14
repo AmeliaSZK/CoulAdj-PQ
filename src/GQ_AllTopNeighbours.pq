@@ -3,7 +3,7 @@ let
     RLEncoded = GQ_Result_EncodeRunLength,
 
     /* Align consecutive rows */
-    GroupedByRowIndex = Table.Group(RLEncoded, {"row"}, {{"Rows", each _, type table [row = number, colour = binary, Start = number, End = number]}}),
+    GroupedByRowIndex = Table.Group(RLEncoded, {"row"}, {{"Rows", each _, type table [row = number, colour = binary, Start = number, End = number]}}, GroupKind.Local),
     AllRows = Table.Column(GroupedByRowIndex, "Rows"),
     AlignedTopRow = Table.FromColumns({AllRows, List.Skip(AllRows)}, {"bottom", "Top"}),
     RemovedLastRow = Table.RemoveLastN(AlignedTopRow,1),
