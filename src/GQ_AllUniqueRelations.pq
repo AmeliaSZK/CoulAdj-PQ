@@ -7,8 +7,9 @@ let
     CombinedAllOrderedRelations = Table.Combine({GQ_AllTopNeighbours, GQ_RightNeighbours}),
     PurgedDuplicates = Table.Distinct(CombinedAllOrderedRelations),
 
-    AllTopNeighRows = Table.ToRows(GQ_AllTopNeighbours),
-    RightNeighRows = Table.ToRows(GQ_RightNeighbours),
-    Union = List.Union(AllTopNeighRows, RightNeighRows)
+    AllTopNeighRows = Table.ToRecords(GQ_AllTopNeighbours),
+    RightNeighRows = Table.ToRecords(GQ_RightNeighbours),
+    Union = List.Union({AllTopNeighRows, RightNeighRows}),
+    AsTable = Table.FromRecords(Union, type table[MinColour = binary, MaxColour = binary])
 in
-    Union
+    AsTable
