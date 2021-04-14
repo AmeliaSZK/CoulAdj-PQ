@@ -8,7 +8,7 @@ let
     /* Join consecutive segments */
     ProcessSubtable = (table as table) as table =>
 let
-    Segments = List.Buffer(Table.Column(table, "colour")),
+    Segments = Table.Column(table, "colour"),
     Consecutives = Table.FromColumns(
         {Segments, List.Skip(Segments, 1)},
         type table[colour = binary, adj_colour = binary]
