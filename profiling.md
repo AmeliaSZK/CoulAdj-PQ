@@ -88,3 +88,14 @@ All compared to _All Adjacencies with Table.ToColumns without buffering_
 | All Adjacencies      |  |  |
 | Formatted Output     |  |  |
 
+## Also used local groups in RLE
+
+| Stage         | Cumulative | Alone | Diff |
+|----------------------|------|------|------|
+| Run Length Encoding  | 0:13 | 0:13 | -50s
+| All Top Neighbours   |  |  |
+| Right Neighbours     |  |  |
+| All Unique Relations |  |  |
+| All Adjacencies      |  |  |
+| Formatted Output     |  |  |
+
