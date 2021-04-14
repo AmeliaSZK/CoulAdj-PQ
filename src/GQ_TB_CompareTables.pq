@@ -1,6 +1,6 @@
 let
     Source = "",
-    table1 = GQ_TB_Golden_SizedSamples,
+    table1 = GQ_TB_Golden_MortalEmpire,
     table2 = GQ_FormattedOutput,
     Table1_AsRecords = Table.ToRecords(table1),
     Table2_AsRecords = Table.ToRecords(table2),
