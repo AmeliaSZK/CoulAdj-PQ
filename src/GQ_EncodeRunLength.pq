@@ -12,11 +12,11 @@ in
 
     EncodeRunLengthSubtable = (table as table) as table =>
 let
-    GroupedRows = Table.Group(table, {"colour"}, {{"Count", each Table.RowCount(_), type number}, {"Start", each List.Min([col]), type number}}, GroupKind.Local),
-    AddedEnd = Table.AddColumn(GroupedRows, "End", each [Count] + [Start], type number),
-    RemovedCount = Table.RemoveColumns(AddedEnd, "Count")
+    GroupedRows = Table.Group(table, {"colour"}, {{"End", each List.Last([col])+1, type number}, {"Start", each List.First([col]), type number}}, GroupKind.Local)
+    //AddedEnd = Table.AddColumn(GroupedRows, "End", each [Count] + [Start], type number),
+    //RemovedCount = Table.RemoveColumns(AddedEnd, "Count")
 in
-    RemovedCount
+    GroupedRows
 
 in
     EncodeRunLength
