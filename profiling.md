@@ -75,7 +75,7 @@ This is equivalent to All Adjacencies with Table.ToColumns *with* buffering,
 and my hypothesis is that the 6 minutes result benefited from a cache somewhere.
 
 # RLE
-All compared to _All Adjacencies with Table.ToColumns without buffering_
+First two compared to _All Adjacencies with Table.ToColumns without buffering_
 
 ## Used List.First and List.Last+1 for Start and End
 
@@ -98,4 +98,16 @@ All compared to _All Adjacencies with Table.ToColumns without buffering_
 | All Unique Relations |  |  |
 | All Adjacencies      |  |  |
 | Formatted Output     | 2:28 | ? | -4:37
+
+## Cleaned-up RLE & full profile
+Compared with _After first clean up_
+
+| Stage         | Cumulative | Alone | Diff |
+|----------------------|------|------|------|
+| Run Length Encoding  | 0:11 | 0:11 | -56s
+| All Top Neighbours   | 0:38 | 0:27 | -2:24
+| Right Neighbours     | 0:22 | 0:11 | -46s
+| All Unique Relations | 1:00 | 0:22 | -37s
+| All Adjacencies      | 1:36 | 0:36 | -1:10
+| Formatted Output     | 2:34 | 1:58 | +1:36
 
