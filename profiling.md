@@ -97,5 +97,5 @@ All compared to _All Adjacencies with Table.ToColumns without buffering_
 | Right Neighbours     |  |  |
 | All Unique Relations |  |  |
 | All Adjacencies      |  |  |
-| Formatted Output     |  |  |
+| Formatted Output     | 2:28 | ? | -4:37
 
