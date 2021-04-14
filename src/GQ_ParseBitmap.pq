@@ -36,25 +36,25 @@ let
     PixelValues = ReadPixelArray(PixelArray),
 
     /* Conversion Functions */
-    BluFromColour = (colour as binary) => BinaryFormat.Byte(Binary.Range(colour, 0, 1)),
-    GreFromColour = (colour as binary) => BinaryFormat.Byte(Binary.Range(colour, 1, 1)),
-    RedFromColour = (colour as binary) => BinaryFormat.Byte(Binary.Range(colour, 2, 1)),
+    BluFromColour = (colour) => BinaryFormat.Byte(Binary.Range(colour, 0, 1)),
+    GreFromColour = (colour) => BinaryFormat.Byte(Binary.Range(colour, 1, 1)),
+    RedFromColour = (colour) => BinaryFormat.Byte(Binary.Range(colour, 2, 1)),
     AlpFromColour = 
         if HasAlpha then
-            (colour as binary) => BinaryFormat.Byte(Binary.Range(colour, 3, 1))
+            (colour) => BinaryFormat.Byte(Binary.Range(colour, 3, 1))
         else
-            (colour as binary) => 255,
+            (colour) => 255,
 
     Colour.Type   = type binary,
     RGB.Type      = type [r = number, g = number, b = number],
     RgbAlpha.Type = type [r = number, g = number, b = number, a = number],
 
-    RGB.FromColour = (colour as binary) as record => [
+    RGB.FromColour = (colour) => [
         r = RedFromColour(colour),
         g = GreFromColour(colour),
         b = BluFromColour(colour)
     ],
-    RgbAlpha.FromColour = (colour as binary) as record => [
+    RgbAlpha.FromColour = (colour) => [
         r = RedFromColour(colour),
         g = GreFromColour(colour),
         b = BluFromColour(colour),
