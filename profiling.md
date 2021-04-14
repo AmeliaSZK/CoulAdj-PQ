@@ -125,3 +125,15 @@ Compared with _Cleaned-up RLE & full profile_
 | All Adjacencies      |  |  | 
 | Formatted Output     | 2:01 | 0:25 | -33s
 
+## Consolidated Top Center Neighbours filtering
+
+
+| Stage         | Cumulative | Alone | Diff |
+|----------------------|------|------|------|
+| Run Length Encoding  |  |  | 
+| All Top Neighbours   |  |  | 
+| Right Neighbours     |  |  | 
+| All Unique Relations |  |  | 
+| All Adjacencies      |  |  | 
+| Formatted Output     | 2:02 |  | 
+
