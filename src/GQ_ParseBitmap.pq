@@ -21,6 +21,7 @@ let
     WORD      = BinaryFormat.ByteOrder(BinaryFormat.UnsignedInteger16, ByteOrder.LittleEndian),
     // While not all of these will be needed, I wrote them all to make verification easier
 
+
     /* CONSTANTS */
     /* Compression Methods */
     // https://en.wikipedia.org/wiki/BMP_file_format#DIB_header_(bitmap_information_header)
@@ -42,8 +43,8 @@ let
     BI_CMYKRLE8       = 12,
     BI_CMYKRLE4       = 13,
 
-    /* STRUCTURES */
 
+    /* STRUCTURES */
     // https://docs.microsoft.com/en-us/windows/win32/api/wingdi/ns-wingdi-bitmapfileheader#syntax
     BITMAPFILEHEADER = BinaryFormat.Record([
         Type      = WORD,
@@ -161,6 +162,21 @@ let
     // Anywayz, I didn't use LONG because LONG means signed integer, and that's not what a 2.30 fixed-point is.
     FXPT2DOT30 = BinaryFormat.ByteOrder(BinaryFormat.Binary(4), ByteOrder.LittleEndian),
 
+    // https://docs.microsoft.com/en-us/windows/win32/api/wingdi/ns-wingdi-rgbquad
+    // I renamed the Reserved to Alpha, because in practice that's what it is.
+    RGBQUAD = BinaryFormat.Record([
+        Blue  = BYTE,
+        Green = BYTE,
+        Red   = BYTE,
+        Alpha = BYTE
+    ]),
+
+    // https://docs.microsoft.com/en-us/windows/win32/api/wingdi/ns-wingdi-rgbtriple
+    RGBTRIPLE = BinaryFormat.Record([
+        Blue  = BYTE,
+        Green = BYTE,
+        Red   = BYTE
+    ]),
 
 
 
