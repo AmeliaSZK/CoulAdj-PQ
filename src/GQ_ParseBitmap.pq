@@ -230,7 +230,6 @@ let
     /* Integrity checks */
     /*
     HeaderField          = List.Transform(List.Range(Binary.ToList(bitmap), 0, 2), Character.FromNumber), // Must be "BM"
-    HeaderSize           = ReadUint32LE(Binary.Range(bitmap, 14, 4)), // Must be 40
     */
 
     /* Binary format functions */
@@ -240,14 +239,19 @@ let
     ReadUint16LE = BinaryFormat.ByteOrder(BinaryFormat.UnsignedInteger16, ByteOrder.LittleEndian),
 
     /* Important infos */
-    Width                = ReadSint32LE(Binary.Range(bitmap, 18, 4)), 
-    Height               = ReadSint32LE(Binary.Range(bitmap, 22, 4)), 
-    BitsPerPixel         = ReadUint16LE(Binary.Range(bitmap, 28, 2)),
+    Width                = ImageHeader[Width], 
+    Height               = ImageHeader[Height], 
+    BitsPerPixel         = ImageHeader[BitCount], 
     BytesPerPixel        = BitsPerPixel / 8,
-    NbOfPixels           = ReadUint32LE(Binary.Range(bitmap, 34, 4)),
+    NbOfPixels           = Width * Height,
     PixelArrayOffset     = FileHeader[OffBits],
-    PixelArraySize       = NbOfPixels * BytesPerPixel,
+    // BITMAPCOREHEADER doesn't have the SizeImage field
+    PixelArraySize       = Record.FieldOrDefault(ImageHeader, "SizeImage", NbOfPixels * BytesPerPixel), 
     HasAlpha             = (BytesPerPixel = 4),
+    // Positive Height is bottom-up, and negative is top-down
+    // https://docs.microsoft.com/en-us/previous-versions/dd183376(v=vs.85)#members
+    IsBottomUp           = 0 < Height,
+    IsTopDown            = not IsBottomUp,
 
     NbRows = Height,
     NbCols = Width,
