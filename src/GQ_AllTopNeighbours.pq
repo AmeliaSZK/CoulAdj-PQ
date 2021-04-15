@@ -3,7 +3,7 @@ let
     RLEncoded = GQ_Result_EncodeRunLength,
 
     /* Align consecutive rows */
-    GroupedByRowIndex = Table.Group(RLEncoded, {"row"}, {{"Rows", each _, type table [row = number, colour = binary, Start = number, End = number]}}),
+    GroupedByRowIndex = Table.Group(RLEncoded, {"row"}, {{"Rows", each _, type table [row = number, colour = binary, Start = number, End = number]}}, GroupKind.Local),
     AllRows = Table.Column(GroupedByRowIndex, "Rows"),
     AlignedTopRow = Table.FromColumns({AllRows, List.Skip(AllRows)}, {"bottom", "Top"}),
     RemovedLastRow = Table.RemoveLastN(AlignedTopRow,1),
@@ -15,6 +15,7 @@ let
     RemovedSameValues = Table.SelectRows(KeptTopNeighbours, each [colour] <> [Top.colour]),
 
     /* Top Center */
+    RemovedNonNeighbours = Table.SelectRows(RemovedSameValues, each not ([Top.End] < [Start]) and not ([End] < [Top.Start])),
     // Top Center neighbours 1 of 2
     RemovedTopEndsBeforeStart = Table.SelectRows(RemovedSameValues, each not ([Top.End] < [Start])),
     // Top Center neighbours 2 of 2
@@ -23,7 +24,8 @@ let
     /* Diagonals */
     // Next 2 steps only done if DontRelateDiagonals is true
     // Top Left neighbours
-    RemovedStartsAtTopEnd = Table.SelectRows(RemovedEndsBeforeTopStart, each not ([Start] = [Top.End])),
+//    RemovedStartsAtTopEnd = Table.SelectRows(RemovedEndsBeforeTopStart, each not ([Start] = [Top.End])),
+    RemovedStartsAtTopEnd = Table.SelectRows(RemovedNonNeighbours , each not ([Start] = [Top.End])),
     // Top Right neighbours
     RemovedEndsAtTopStart = Table.SelectRows(RemovedStartsAtTopEnd, each not ([End] = [Top.Start])),
 
@@ -31,7 +33,8 @@ let
         if DontRelateDiagonals then
             RemovedEndsAtTopStart
         else
-            RemovedEndsBeforeTopStart,
+//            RemovedEndsBeforeTopStart,
+            RemovedNonNeighbours,
 
     /* Keep Ordered Relations */
     #"Removed Other Columns" = Table.SelectColumns(AdjacentTopNeighbours,{"colour", "Top.colour"}),
