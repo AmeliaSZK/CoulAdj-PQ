@@ -178,6 +178,24 @@ let
         Red   = BYTE
     ]),
 
+    
+    /* HEADER SIZES (in bytes) */
+    // These numbers are from the Wikipedia, because I didn't find a Microsoft source.
+    // I think that Microsoft didn't bother, because when you're programming in C (and C++?),
+    //    you can just do `sizeof(BITMAPINFOHEADER)` to get the size of the structure.
+    // Technically, you could probably write a Power Query function that would take a BinaryFormat
+    //    and return the amount of bytes it's going to read, but that felt like a waste of a lot of time.
+    // https://en.wikipedia.org/wiki/BMP_file_format#DIB_header_(bitmap_information_header)
+    HeaderSize = [
+        BITMAPCOREHEADER = 12,
+        BITMAPINFOHEADER = 40,
+        BITMAPV4HEADER   = 108,
+        BITMAPV5HEADER   = 124
+    ],
+
+    
+    /* PARSING */
+
 
 
     /* Integrity checks */
