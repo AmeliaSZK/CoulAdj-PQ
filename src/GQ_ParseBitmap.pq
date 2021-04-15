@@ -21,6 +21,26 @@ let
     WORD      = BinaryFormat.ByteOrder(BinaryFormat.UnsignedInteger16, ByteOrder.LittleEndian),
     // While not all of these will be needed, I wrote them all to make verification easier
 
+    /* Constants for Compression method */
+    // https://en.wikipedia.org/wiki/BMP_file_format#DIB_header_(bitmap_information_header)
+    //    You'll need to scroll a bit down to find the table.
+    // Again, I couldn't find any Microsoft webpage with this information.
+    //    If I understood my web searches correctly, the official source is a .h file
+    //        that comes with the Windows SDK from Visual Studio. This is like tens of gigabytes
+    //        of downloads.
+    //    Aside from the Wikipedia, other websites that list the values of Windows constants
+    //        looked like they came from the 90s. 
+    BI_RGB            = 0,
+    BI_RLE8           = 1,
+    BI_RLE4           = 2,
+    BI_BITFIELDS      = 3,
+    BI_JPEG           = 4,
+    BI_PNG            = 5,
+    BI_ALPHABITFIELDS = 6,
+    BI_CMYK           = 11,
+    BI_CMYKRLE8       = 12,
+    BI_CMYKRLE4       = 13,
+
 
 
     /* Integrity checks */
