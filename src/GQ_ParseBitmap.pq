@@ -186,7 +186,7 @@ let
     // Technically, you could probably write a Power Query function that would take a BinaryFormat
     //    and return the amount of bytes it's going to read, but that felt like a waste of a lot of time.
     // https://en.wikipedia.org/wiki/BMP_file_format#DIB_header_(bitmap_information_header)
-    HeaderSize = [
+    AllHeaderSizes = [
         BITMAPCOREHEADER = 12,
         BITMAPINFOHEADER = 40,
         BITMAPV4HEADER   = 108,
@@ -195,7 +195,26 @@ let
 
     
     /* PARSING */
-
+    // We need the Size to know which header format to parse next.
+    ReadFileHeaderAndNextHeaderSize = BinaryFormat.Record([
+        FileHeader = BITMAPFILEHEADER,
+        Size = DWORD
+    ]),
+    FileHeaderAndNextHeaderSize = ReadFileHeaderAndNextHeaderSize(bitmap),
+    FileHeader = FileHeaderAndNextHeaderSize[FileHeader],
+    Size = FileHeaderAndNextHeaderSize[Size],
+    
+    ReadImageHeader =
+        if Size = AllHeaderSizes[BITMAPCOREHEADER] then
+            BITMAPCOREHEADER
+        else if Size = AllHeaderSizes[BITMAPINFOHEADER] then
+            BITMAPINFOHEADER
+        else if Size = AllHeaderSizes[BITMAPV4HEADER] then
+            BITMAPV4HEADER
+        else if Size = AllHeaderSizes[BITMAPV5HEADER] then
+            BITMAPV5HEADER
+        else
+            error "Unrecognized bitmap format; Headers of size " & Number.ToText(Size) & " are not supported.",
 
 
     /* Integrity checks */
@@ -216,7 +235,7 @@ let
     BitsPerPixel         = ReadUint16LE(Binary.Range(bitmap, 28, 2)),
     BytesPerPixel        = BitsPerPixel / 8,
     NbOfPixels           = ReadUint32LE(Binary.Range(bitmap, 34, 4)),
-    PixelArrayOffset     = ReadUint32LE(Binary.Range(bitmap, 10, 4)),
+    PixelArrayOffset     = FileHeader[OffBits],
     PixelArraySize       = NbOfPixels * BytesPerPixel,
     HasAlpha             = (BytesPerPixel = 4),
 
