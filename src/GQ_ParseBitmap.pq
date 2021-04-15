@@ -245,7 +245,8 @@ let
     BytesPerPixel        = BitsPerPixel / 8,
     NbOfPixels           = Width * Height,
     PixelArrayOffset     = FileHeader[OffBits],
-    // BITMAPCOREHEADER doesn't have the SizeImage field
+    // BITMAPCOREHEADER doesn't have the Compression and SizeImage fields
+    Compression          = Record.FieldOrDefault(ImageHeader, "Compression", BI_RGB), 
     PixelArraySize       = Record.FieldOrDefault(ImageHeader, "SizeImage", NbOfPixels * BytesPerPixel), 
     HasAlpha             = (BytesPerPixel = 4),
     // Positive Height is bottom-up, and negative is top-down
@@ -275,20 +276,54 @@ let
             (colour as binary) => 255,
 
     Colour.Type   = type binary,
-    RGB.Type      = type [r = number, g = number, b = number],
-    RgbAlpha.Type = type [r = number, g = number, b = number, a = number],
+    // Yes, the order is BGR(A). Refer to RGBQUAD and RGBTRIPLE
+    RGB.Type      = type [b = number, g = number, r = number],
+    RgbAlpha.Type = type [b = number, g = number, r = number, a = number],
 
-    RGB.FromColour = (colour as binary) as record => [
-        r = RedFromColour(colour),
-        g = GreFromColour(colour),
-        b = BluFromColour(colour)
-    ],
-    RgbAlpha.FromColour = (colour as binary) as record => [
-        r = RedFromColour(colour),
-        g = GreFromColour(colour),
-        b = BluFromColour(colour),
-        a = AlpFromColour(colour)
-    ],
+    // Regular cases
+    RGB.FromRgbColour = RGBTRIPLE,
+    RgbAlpha.FromRgbAlphaColour = RGBQUAD,
+
+    // Sepcial cases
+    RGB.FromRgbAlphaColour = (colour as binary) as record => Record.RemoveFields(RGBQUAD(colour), "a"),
+
+    // The established CoulAdj API says that if it is asked to invent an alpha value, the max alpha
+    //    value will be used. 
+    // No link to this API, because those that are public are in languages whose libraries can't
+    //    tell easily if there is an alpha channel in the source image,
+    // And also, a link doesn't matter, because I'm the one who wrote the CoulAdj API(s).
+    // (Hopefully, by the time this code is pulished, I will have documented the CoulAdj API for Power Query,
+    //    and will have remembered to update this comment with a link or with proper function documentation.)
+    RgbAlpha.FromRgbColour = (colour as binary) as record => RGBTRIPLE(colour) & [a = MaxAlphaValue],
+
+    // MaxAlphaValue is never more than 255 because the bitmap specs only allows up to 8 bits for a component value.
+    // We don't care about the values with less than 8 bits, because this Power Query parser doesn't support
+    //    reading binary values that small.
+    // And we don't support these values because no convenient functions in the library exists to read
+    //    binary values of less than 8 bits.
+    // Also, I have the sneaking suspicion that nowadays, the only use-case for BMP images that aren't
+    //    24 or 32 bits per pixel is to be used internally by Windows desktop applications, and not to
+    //    be stored as files.
+    MaxAlphaValue = 255, 
+    
+    FromColourFunctions = 
+        if Compression = BI_BITFIELDS then
+            error "Image uses bit fields for encoding, and this feature is not supported."
+        else if Compression <> BI_RGB then
+            error "Image uses an unsupported compression method. Only uncompressed images are supported."
+
+        else if BitsPerPixel = 24 then
+            [RGB      =      RGB.FromRgbColour, 
+             RgbAlpha = RgbAlpha.FromRgbColour]
+        else if BitsPerPixel = 32 then
+            [RGB      =      RGB.FromRgbAlphaColour, 
+             RgbAlpha = RgbAlpha.FromRgbAlphaColour]
+
+        else
+            error "Image has " & Number.ToText(BitsPerPixel) & " bits per pixel, and only 24 and 32 bits per pixel are supported.",
+
+    RGB.FromColour      = FromColourFunctions[RGB],
+    RgbAlpha.FromColour = FromColourFunctions[RgbAlpha],
 
 
     /* Coordinates */
@@ -311,6 +346,9 @@ let
         NbRows = NbRows,
         NbCols = NbCols,
         HasAlpha = HasAlpha,
+        Size = ImageHeader[Size],
+        BitCount = ImageHeader[BitCount],
+        Compression = Compression,
         PixelArray.AsColours = AllPixels,
         Colour.Type = Colour.Type,
         RGB.FromColour = RGB.FromColour,
