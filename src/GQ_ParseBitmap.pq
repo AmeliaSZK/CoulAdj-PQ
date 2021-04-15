@@ -2,7 +2,7 @@ let
     ParseBitmap = (bitmap as binary) as record =>
 
 let 
-    /* Data Types */
+    /* DATA TYPES */
     // Number of bits and signedness:
     //    https://docs.microsoft.com/en-ca/windows/win32/learnwin32/windows-coding-conventions#integer-types
     // For the little-endian byte order, the only source I found was the wikipedia :/
@@ -21,7 +21,8 @@ let
     WORD      = BinaryFormat.ByteOrder(BinaryFormat.UnsignedInteger16, ByteOrder.LittleEndian),
     // While not all of these will be needed, I wrote them all to make verification easier
 
-    /* Constants for Compression method */
+    /* CONSTANTS */
+    /* Compression Methods */
     // https://en.wikipedia.org/wiki/BMP_file_format#DIB_header_(bitmap_information_header)
     //    You'll need to scroll a bit down to find the table.
     // Again, I couldn't find any Microsoft webpage with this information.
@@ -40,6 +41,42 @@ let
     BI_CMYK           = 11,
     BI_CMYKRLE8       = 12,
     BI_CMYKRLE4       = 13,
+
+    /* STRUCTURES */
+
+    // https://docs.microsoft.com/en-us/windows/win32/api/wingdi/ns-wingdi-bitmapfileheader#syntax
+    BITMAPFILEHEADER = BinaryFormat.Record([
+        Type      = WORD,
+        Size      = DWORD,
+        Reserved1 = WORD,
+        Reserved2 = WORD,
+        OffBits   = DWORD
+    ]),
+
+    // https://docs.microsoft.com/en-us/windows/win32/api/wingdi/ns-wingdi-bitmapcoreheader
+    BITMAPCOREHEADER = BinaryFormat.Record([
+        Size     = DWORD,
+        Width    = WORD,
+        Height   = WORD,
+        Planes   = WORD,
+        BitCount = WORD
+    ]),
+
+    // https://docs.microsoft.com/en-us/previous-versions/dd183376(v=vs.85)
+    BITMAPINFOHEADER = BinaryFormat.Record([
+        Size          = DWORD,
+        Width         = LONG,
+        Height        = LONG,
+        Planes        = WORD,
+        BitCount      = WORD,
+        Compression   = DWORD,
+        SizeImage     = DWORD,
+        XPelsPerMeter = LONG,
+        YPelsPerMeter = LONG,
+        ClrUsed       = DWORD,
+        ClrImportant  = DWORD
+    ]),
+
 
 
 
