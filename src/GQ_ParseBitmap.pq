@@ -277,8 +277,8 @@ let
 
     Colour.Type   = type binary,
     // Yes, the order is BGR(A). Refer to RGBQUAD and RGBTRIPLE
-    RGB.Type      = type [b = number, g = number, r = number],
-    RgbAlpha.Type = type [b = number, g = number, r = number, a = number],
+    RGB.Type      = type [Blue = number, Green = number, Red = number],
+    RgbAlpha.Type = type [Blue = number, Green = number, Red = number, Alpha = number],
 
     // Regular cases
     RGB.FromRgbColour = RGBTRIPLE,
@@ -307,12 +307,12 @@ let
     MaxAlphaValue = 255, 
     
     FromColourFunctions = 
-        if Compression = BI_BITFIELDS then
+        /*if Compression = BI_BITFIELDS then
             error "Image uses bit fields for encoding, and this feature is not supported."
         else if Compression <> BI_RGB then
             error "Image uses an unsupported compression method. Only uncompressed images are supported."
 
-        else if BitsPerPixel = 24 then
+        else*/ if BitsPerPixel = 24 then
             [RGB      =      RGB.FromRgbColour, 
              RgbAlpha = RgbAlpha.FromRgbColour]
         else if BitsPerPixel = 32 then
@@ -346,15 +346,13 @@ let
         NbRows = NbRows,
         NbCols = NbCols,
         HasAlpha = HasAlpha,
-        Size = ImageHeader[Size],
-        BitCount = ImageHeader[BitCount],
-        Compression = Compression,
         PixelArray.AsColours = AllPixels,
         Colour.Type = Colour.Type,
         RGB.FromColour = RGB.FromColour,
         RGB.Type = RGB.Type,
         RgbAlpha.FromColour = RgbAlpha.FromColour,
-        RgbAlpha.Type = RgbAlpha.Type
+        RgbAlpha.Type = RgbAlpha.Type,
+        ImageHeader = ImageHeader
     ]
 in
     AsRecord
