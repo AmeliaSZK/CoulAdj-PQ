@@ -2,6 +2,27 @@ let
     ParseBitmap = (bitmap as binary) as record =>
 
 let 
+    /* Data Types */
+    // Number of bits and signedness:
+    //    https://docs.microsoft.com/en-ca/windows/win32/learnwin32/windows-coding-conventions#integer-types
+    // For the little-endian byte order, the only source I found was the wikipedia :/
+    //    https://en.wikipedia.org/wiki/BMP_file_format#Bitmap_file_header
+    //    "All of the integer values are stored in little-endian format (i.e. least-significant byte first)."
+    BYTE      = BinaryFormat.ByteOrder(BinaryFormat.Byte,              ByteOrder.LittleEndian),
+    DWORD     = BinaryFormat.ByteOrder(BinaryFormat.UnsignedInteger32, ByteOrder.LittleEndian),
+    INT32     = BinaryFormat.ByteOrder(BinaryFormat.SignedInteger32,   ByteOrder.LittleEndian),
+    INT64     = BinaryFormat.ByteOrder(BinaryFormat.SignedInteger64,   ByteOrder.LittleEndian),
+    LONG      = BinaryFormat.ByteOrder(BinaryFormat.SignedInteger32,   ByteOrder.LittleEndian),
+    LONGLONG  = BinaryFormat.ByteOrder(BinaryFormat.SignedInteger64,   ByteOrder.LittleEndian),
+    UINT32    = BinaryFormat.ByteOrder(BinaryFormat.UnsignedInteger32, ByteOrder.LittleEndian),
+    UINT64    = BinaryFormat.ByteOrder(BinaryFormat.UnsignedInteger64, ByteOrder.LittleEndian),
+    ULONG     = BinaryFormat.ByteOrder(BinaryFormat.UnsignedInteger32, ByteOrder.LittleEndian),
+    ULONGLONG = BinaryFormat.ByteOrder(BinaryFormat.UnsignedInteger64, ByteOrder.LittleEndian),
+    WORD      = BinaryFormat.ByteOrder(BinaryFormat.UnsignedInteger16, ByteOrder.LittleEndian),
+    // While not all of these will be needed, I wrote them all to make verification easier
+
+
+
     /* Integrity checks */
     /*
     HeaderField          = List.Transform(List.Range(Binary.ToList(bitmap), 0, 2), Character.FromNumber), // Must be "BM"
