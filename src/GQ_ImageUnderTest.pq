@@ -1,4 +1,4 @@
 let
-    Binary = Record.Field(GQ_TB_ImageBinaries, "wh2_main_great_vortex_map_6" /*"sample_size_1"*/)
+    Binary = Record.Field(GQ_TB_ImageBinaries, "warhammer_map_1_1_shadow" /*"sample_size_1"*/)
 in
     Binary

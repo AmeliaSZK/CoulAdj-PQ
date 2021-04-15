@@ -137,3 +137,100 @@ Compared with _Cleaned-up RLE & full profile_
 | All Adjacencies      |  |  | 
 | Formatted Output     | 2:02 |  | 
 
+# Final profile before merging into the main branch
+This profiling concludes this initial wave of optimizations.
+While more optimizations may come, the next phase will be to make
+the bitmap parser more robust, and also to clean-up and consolidate the code.
+
+By "consolidate", I mean to merge all the queries into one, because the final
+form of this implementation of CoulAdj will be a single Power Query function.
+
+## Future optimizations
+
+There are two more major optimizations attempts that I anticipate:
+* Merge-sort
+* List of don't cares
+
+### Merge-sort
+The merge-sort would replace how we get the list of segments on the next
+scanline adjacent to the current segment.
+Currently, after doing the run length encoding, all segments are joined
+with all segments on the next scanline, like this:
+
+Before:
+| Scanline | Colour | Start | End |
+| ---------|---------|-------|-----|
+| 1 | A | 0 | 2 |
+| 1 | B | 2 | 7 |
+| 1 | C | 7 | 9 |
+| 2 | D | 0 | 4 |
+| 2 | E | 4 | 6 |
+| 2 | F | 6 | 9 |
+
+After (only scanline 1 is shown):
+| Scanline | Colour | Start | End | Next Scanline | Next Colour | Next Start | Next End |
+| ---------|--------|-------|-----|--------------:|------------:|-----------:|---------:|
+| 1 | A | 0 | 2 | 2 | D | 0 | 4 |
+| 1 | A | 0 | 2 | 2 | E | 4 | 6 |
+| 1 | A | 0 | 2 | 2 | F | 6 | 9 |
+| 1 | B | 2 | 7 | 2 | D | 0 | 4 |
+| 1 | B | 2 | 7 | 2 | E | 4 | 6 |
+| 1 | B | 2 | 7 | 2 | F | 6 | 9 |
+| 1 | C | 7 | 9 | 2 | D | 0 | 4 |
+| 1 | C | 7 | 9 | 2 | E | 4 | 6 |
+| 1 | C | 7 | 9 | 2 | F | 6 | 9 |
+
+We then filter for the adjacent segments by keeping rows where
+```
+[Start] <= [Next End] and [Next Start] <= [End]
+```
+
+And in our example, this would yield:
+| Scanline | Colour | Start | End | Next Scanline | Next Colour | Next Start | Next End |
+| ---------|--------|-------|-----|--------------:|------------:|-----------:|---------:|
+| 1 | A | 0 | 2 | 2 | D | 0 | 4 |
+| 1 | B | 2 | 7 | 2 | D | 0 | 4 |
+| 1 | B | 2 | 7 | 2 | E | 4 | 6 |
+| 1 | B | 2 | 7 | 2 | F | 6 | 9 |
+| 1 | C | 7 | 9 | 2 | F | 6 | 9 |
+
+Illustration of the example scanlines:
+```
+A A B B B B B C C
+D D D D E E F F F
+```
+
+This method is wasteful, because once we know that a segment on scanline #2
+ended before the start of the current segment on scanline #1, well all other
+segments that will follow on scanline #1 will also start after.
+
+We believe that a form of merge-sort could help avoid the unnecessary 
+comparisons. We made an attempt with `Table.Join` and `JoinAlgorithm.SortMerge`,
+but the `keyEqualityComparers` we thought we could exploit isn't allowed to be
+used by the engine.
+
+So we would need to implement our own sort-merge, and that seems like a lot of
+work prone to bugs leading to potentially incorrect results.
+
+### List of don't cares
+This list would be use to filter the result of the run length encoding to
+remove all colours that we don't care about. This would mean that we have
+to compare less segments.
+
+This list would be coming from the sea regions in a given Total War map.
+
+(This section is short because I don't want to be spending so much more
+time on documentation right now...)
+
+## Profiling
+
+| Stage         | Cumulative | Alone |
+|----------------------|------|------|
+| Run Length Encoding  | 0:10 | 0:10 |
+| All Top Neighbours   | 0:36 | 0:26 |
+| Right Neighbours     | 0:21 | 0:11 |
+| All Unique Relations | 0:57 | 0:21 |
+| All Adjacencies      | 1:28 | 0:31 |
+| Formatted Output     | 1:34 | 0:06 |
+
+
