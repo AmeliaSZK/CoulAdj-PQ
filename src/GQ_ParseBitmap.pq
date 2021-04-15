@@ -77,6 +77,90 @@ let
         ClrImportant  = DWORD
     ]),
 
+    // https://docs.microsoft.com/en-us/windows/win32/api/wingdi/ns-wingdi-bitmapv4header
+    // The Endpoints field is of type CIEXYZTRIPLE, which contains values of type CIEXYZ,
+    //    which contains values of type FXPT2DOT30. 
+    // https://stackoverflow.com/a/39374931
+    BITMAPV4HEADER = BinaryFormat.Record([
+        Size          = DWORD,
+        Width         = LONG,
+        Height        = LONG,
+        Planes        = WORD,
+        BitCount      = WORD,
+        Compression   = DWORD,
+        SizeImage     = DWORD,
+        XPelsPerMeter = LONG,
+        YPelsPerMeter = LONG,
+        ClrUsed       = DWORD,
+        ClrImportant  = DWORD,
+
+        RedMask    = DWORD,
+        GreenMask  = DWORD,
+        BlueMask   = DWORD,
+        AlphaMask  = DWORD,
+        CSType     = DWORD,
+        Endpoints  = CIEXYZTRIPLE,
+        GammaRed   = DWORD,
+        GammaGreen = DWORD,
+        GammaBlue  = DWORD
+    ]),
+
+    // https://docs.microsoft.com/en-us/windows/win32/api/wingdi/ns-wingdi-bitmapv5header
+    BITMAPV5HEADER = BinaryFormat.Record([
+        Size          = DWORD,
+        Width         = LONG,
+        Height        = LONG,
+        Planes        = WORD,
+        BitCount      = WORD,
+        Compression   = DWORD,
+        SizeImage     = DWORD,
+        XPelsPerMeter = LONG,
+        YPelsPerMeter = LONG,
+        ClrUsed       = DWORD,
+        ClrImportant  = DWORD,
+
+        RedMask    = DWORD,
+        GreenMask  = DWORD,
+        BlueMask   = DWORD,
+        AlphaMask  = DWORD,
+        CSType     = DWORD,
+        Endpoints  = CIEXYZTRIPLE,
+        GammaRed   = DWORD,
+        GammaGreen = DWORD,
+        GammaBlue  = DWORD,
+
+        Intent      = DWORD,
+        ProfileData = DWORD,
+        ProfileSize = DWORD,
+        Reserved    = DWORD
+    ]),
+
+    // https://docs.microsoft.com/en-us/windows/win32/api/wingdi/ns-wingdi-ciexyztriple
+    CIEXYZTRIPLE = BinaryFormat.Record([
+        ciexyzRed   = CIEXYZ,
+        ciexyzGreen = CIEXYZ,
+        ciexyzBlue  = CIEXYZ
+    ]),
+
+    // https://docs.microsoft.com/en-us/windows/win32/api/wingdi/ns-wingdi-ciexyz
+    CIEXYZ = BinaryFormat.Record([
+        ciexyzX = FXPT2DOT30,
+        ciexyzY = FXPT2DOT30,
+        ciexyzZ = FXPT2DOT30
+    ]),
+
+    // I found no Microsoft reference for what the FXPT2DOT30 is.
+    // But answers in this StackOverflow question say that...
+    //    1) It's a fixed-point value with a 2-bit integer part and 30-bit fractional part
+    //    2) Someone wrote an unpacked version and assigned them to LONG.
+    // LONG is a signed type, and I am dubious that one of the two integer bits would be used as the sign bit.
+    // However, what's clear is that this is a 32-bit value, and part of the point of these BinaryFormat.Record is
+    //    to get a correct count of bytes to extract.
+    // Also, I really don't give a flying chicken about these advanced CIEXYZ fields, I didn't even look-up what they
+    //    do, and I don't expect them to be ever needed by a bitmap parser written in Power Query.
+    // Anywayz, I didn't use LONG because LONG means signed integer, and that's not what a 2.30 fixed-point is.
+    FXPT2DOT30 = BinaryFormat.ByteOrder(BinaryFormat.Binary(4), ByteOrder.LittleEndian),
+
 
 
 
