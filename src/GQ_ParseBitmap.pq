@@ -201,7 +201,7 @@ let
         Size = DWORD
     ]),
     FileHeaderAndNextHeaderSize = ReadFileHeaderAndNextHeaderSize(bitmap),
-    FileHeader = FileHeaderAndNextHeaderSize[FileHeader],
+    UnbufferedFileHeader = FileHeaderAndNextHeaderSize[FileHeader],
     Size = FileHeaderAndNextHeaderSize[Size],
     
     ReadImageHeader =
@@ -215,6 +215,16 @@ let
             BITMAPV5HEADER
         else
             error "Unrecognized bitmap format; Headers of size " & Number.ToText(Size) & " are not supported.",
+    
+    ReadUntilPixelArray = BinaryFormat.Binary(UnbufferedFileHeader[OffBits]),
+    BufferedHeaders = Binary.Buffer(ReadUntilPixelArray(bitmap)),
+    ReadBothHeaders = BinaryFormat.Record([
+        FileHeader = BITMAPFILEHEADER,
+        ImageHeader = ReadImageHeader
+    ]),
+    Headers = ReadBothHeaders(BufferedHeaders),
+    FileHeader  = Headers[FileHeader],
+    ImageHeader = Headers[ImageHeader],
 
 
     /* Integrity checks */
