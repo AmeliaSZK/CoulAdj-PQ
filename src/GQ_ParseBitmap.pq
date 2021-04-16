@@ -245,9 +245,12 @@ let
     BytesPerPixel        = BitsPerPixel / 8,
     NbOfPixels           = Width * Height,
     PixelArrayOffset     = FileHeader[OffBits],
-    // BITMAPCOREHEADER doesn't have the Compression and SizeImage fields
+    // BITMAPCOREHEADER doesn't have the Compression field
     Compression          = Record.FieldOrDefault(ImageHeader, "Compression", BI_RGB), 
-    PixelArraySize       = Record.FieldOrDefault(ImageHeader, "SizeImage", NbOfPixels * BytesPerPixel), 
+    // Do NOT use the ImageHeader[SizeImage] to  get PixelArraySize, because:
+    //    1) The intended input had incorrectly put the size in PIXELS, instead of BYTES, in that field
+    //    2) And anyway, the specs say that you can put zero in this field with BI_RGB compression
+    PixelArraySize       = NbOfPixels * BytesPerPixel, 
     HasAlpha             = (BytesPerPixel = 4),
     // Positive Height is bottom-up, and negative is top-down
     // https://docs.microsoft.com/en-us/previous-versions/dd183376(v=vs.85)#members
@@ -260,7 +263,6 @@ let
     MaxCol = NbCols - 1,
 
     /* Main Data */
-    FileBytes = Binary.ToList(bitmap),
     PixelArray = Binary.Range(bitmap, PixelArrayOffset, PixelArraySize),
     ReadPixelArray = BinaryFormat.List(BinaryFormat.Binary(BytesPerPixel)),
     PixelValues = ReadPixelArray(PixelArray),
