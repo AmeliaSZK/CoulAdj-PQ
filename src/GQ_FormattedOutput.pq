@@ -1,10 +1,4 @@
 let
-    DecodeColour = GQ_Result_ParseBitmap[RecordFromColour],
-    DecodedType = GQ_Result_ParseBitmap[RecordFromColour.RecordType],
-
-    ColumnNames = Record.FieldNames(Type.RecordFields(DecodedType)),
-    AdjColumnNames = List.Transform(ColumnNames, each "adj_" & _),
-
     // The CoulAdj API specifies the column names and the order in which they appear, and these names
     //    are different from what ParseBitmap returns.
     ColumnRenames =
@@ -37,13 +31,20 @@ let
     else
         {"r", "g", "b", "adj_r", "adj_g", "adj_b"},
 
+    RecordFromColour = GQ_Result_ParseBitmap[RecordFromColour],
+    RecordFromColour.RecordType = GQ_Result_ParseBitmap[RecordFromColour.RecordType],
+
+    FieldNames = Record.FieldNames(Type.RecordFields(RecordFromColour.RecordType)),
+    ColumnNames = FieldNames,
+    AdjColumnNames = List.Transform(ColumnNames, each "adj_" & _),
+
     Source = GQ_AllAdjacencies,
-    #"Added Custom" = Table.AddColumn(Source, "decoded", each DecodeColour([colour]), DecodedType),
-    #"Added Custom1" = Table.AddColumn(#"Added Custom", "adj_decoded", each DecodeColour([adj_colour]), DecodedType),
-    #"Removed Other Columns" = Table.SelectColumns(#"Added Custom1",{"decoded", "adj_decoded"}),
-    #"Expanded {0}" = Table.ExpandRecordColumn(#"Removed Other Columns", "decoded", ColumnNames, ColumnNames),
-    #"Expanded {0}1" = Table.ExpandRecordColumn(#"Expanded {0}", "adj_decoded", ColumnNames, AdjColumnNames),
-    #"Renamed Columns" = Table.RenameColumns(#"Expanded {0}1", ColumnRenames),
-    #"Reordered Columns" = Table.ReorderColumns(#"Renamed Columns",ColumnOrder)
+    AddedDecoded = Table.AddColumn(Source, "decoded", each RecordFromColour([colour]), RecordFromColour.RecordType),
+    AddedAdjDecoded = Table.AddColumn(AddedDecoded, "adj_decoded", each RecordFromColour([adj_colour]), RecordFromColour.RecordType),
+    KeptDecodedColumns = Table.SelectColumns(AddedAdjDecoded,{"decoded", "adj_decoded"}),
+    ExpandedDecoded = Table.ExpandRecordColumn(KeptDecodedColumns, "decoded", FieldNames, ColumnNames),
+    ExpandedAdjDecoded = Table.ExpandRecordColumn(ExpandedDecoded, "adj_decoded", FieldNames, AdjColumnNames),
+    RenamedColumnsPerCoulAdjAPI = Table.RenameColumns(ExpandedAdjDecoded, ColumnRenames),
+    ReorderedColumnsPerCoulAdjAPI = Table.ReorderColumns(RenamedColumnsPerCoulAdjAPI, ColumnOrder)
 in
-    #"Reordered Columns"
+    ReorderedColumnsPerCoulAdjAPI
