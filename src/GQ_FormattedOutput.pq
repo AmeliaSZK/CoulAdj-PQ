@@ -1,14 +1,6 @@
 let
-    DecodeColour = 
-        if GQ_IncludeAlpha then 
-            GQ_Result_ParseBitmap[RgbAlpha.FromColour]
-        else
-            GQ_Result_ParseBitmap[RGB.FromColour],
-    DecodedType = 
-        if GQ_IncludeAlpha then 
-            GQ_Result_ParseBitmap[RgbAlpha.Type]
-        else
-            GQ_Result_ParseBitmap[RGB.Type],
+    DecodeColour = GQ_Result_ParseBitmap[RecordFromColour],
+    DecodedType = GQ_Result_ParseBitmap[RecordFromColour.RecordType],
 
     ColumnNames = Record.FieldNames(Type.RecordFields(DecodedType)),
     AdjColumnNames = List.Transform(ColumnNames, each "adj_" & _),
@@ -29,7 +21,6 @@ let
                 names to fit the expected output felt like an overreach for a function whose role is only to parse a bitmap.
     */
     ColumnRenames =
-        if GQ_IncludeAlpha then 
         {
             {"Red",   "r"},
             {"Green", "g"},
@@ -39,30 +30,18 @@ let
             {"adj_Green", "adj_g"},
             {"adj_Blue",  "adj_b"},
             {"adj_Alpha", "adj_a"}
-        }
-        else
-        {
-            {"Red",   "r"},
-            {"Green", "g"},
-            {"Blue",  "b"},
-            {"adj_Red",   "adj_r"},
-            {"adj_Green", "adj_g"},
-            {"adj_Blue",  "adj_b"}
         },
-
-    ColumnOrder =
-         if GQ_IncludeAlpha then 
-            {"r", "g", "b", "a", "adj_r", "adj_g", "adj_b", "adj_a"}
-        else
-            {"r", "g", "b", "adj_r", "adj_g", "adj_b"},
+    // The expanded records may not have an alpha field, so we'll use MissingField.Ignore
+    //    in Table.RenameColumns and Table.ReorderColumns
+    ColumnOrder = {"r", "g", "b", "a", "adj_r", "adj_g", "adj_b", "adj_a"},
 
     Source = GQ_AllAdjacencies,
-    #"Added Custom" = Table.AddColumn(Source, "decoded", each DecodeColour([colour]), (DecodedType)),
-    #"Added Custom1" = Table.AddColumn(#"Added Custom", "adj_decoded", each DecodeColour([adj_colour]), (DecodedType)),
+    #"Added Custom" = Table.AddColumn(Source, "decoded", each DecodeColour([colour]), DecodedType),
+    #"Added Custom1" = Table.AddColumn(#"Added Custom", "adj_decoded", each DecodeColour([adj_colour]), DecodedType),
     #"Removed Other Columns" = Table.SelectColumns(#"Added Custom1",{"decoded", "adj_decoded"}),
     #"Expanded {0}" = Table.ExpandRecordColumn(#"Removed Other Columns", "decoded", ColumnNames, ColumnNames),
     #"Expanded {0}1" = Table.ExpandRecordColumn(#"Expanded {0}", "adj_decoded", ColumnNames, AdjColumnNames),
-    #"Renamed Columns" = Table.RenameColumns(#"Expanded {0}1", ColumnRenames),
-    #"Reordered Columns" = Table.ReorderColumns(#"Renamed Columns",ColumnOrder)
+    #"Renamed Columns" = Table.RenameColumns(#"Expanded {0}1", ColumnRenames, MissingField.Ignore),
+    #"Reordered Columns" = Table.ReorderColumns(#"Renamed Columns",ColumnOrder, MissingField.Ignore)
 in
     #"Reordered Columns"

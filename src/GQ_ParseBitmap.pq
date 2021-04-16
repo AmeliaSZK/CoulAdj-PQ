@@ -216,8 +216,8 @@ let
         else
             error "Unrecognized bitmap format; Headers of size " & Number.ToText(Size) & " are not supported.",
     
-    ReadUntilPixelArray = BinaryFormat.Binary(UnbufferedFileHeader[OffBits]),
-    BufferedHeaders = Binary.Buffer(ReadUntilPixelArray(bitmap)),
+    ReadUntilPixelArrayStarts = BinaryFormat.Binary(UnbufferedFileHeader[OffBits]),
+    BufferedHeaders = Binary.Buffer(ReadUntilPixelArrayStarts(bitmap)),
     ReadBothHeaders = BinaryFormat.Record([
         FileHeader = BITMAPFILEHEADER,
         ImageHeader = ReadImageHeader
@@ -231,12 +231,6 @@ let
     /*
     HeaderField          = List.Transform(List.Range(Binary.ToList(bitmap), 0, 2), Character.FromNumber), // Must be "BM"
     */
-
-    /* Binary format functions */
-    ReadSint32LE = BinaryFormat.ByteOrder(BinaryFormat.SignedInteger32, ByteOrder.LittleEndian),
-    ReadSint16LE = BinaryFormat.ByteOrder(BinaryFormat.SignedInteger16, ByteOrder.LittleEndian),
-    ReadUint32LE = BinaryFormat.ByteOrder(BinaryFormat.UnsignedInteger32, ByteOrder.LittleEndian),
-    ReadUint16LE = BinaryFormat.ByteOrder(BinaryFormat.UnsignedInteger16, ByteOrder.LittleEndian),
 
     /* Important infos */
     Width                = ImageHeader[Width], 
@@ -262,62 +256,38 @@ let
     MaxRow = NbRows - 1,
     MaxCol = NbCols - 1,
 
-    /* Main Data */
-    PixelArray = Binary.Range(bitmap, PixelArrayOffset, PixelArraySize),
-    ReadPixelArray = BinaryFormat.List(BinaryFormat.Binary(BytesPerPixel)),
-    PixelValues = ReadPixelArray(PixelArray),
 
-    /* Conversion Functions */
+    /* Conversion To Record */
+    RecordFromColour = 
+        if BitsPerPixel = 24 then
+            RGBTRIPLE
+        else if BitsPerPixel = 32 then
+            RGBQUAD
+        else
+            error ErrorMessage.BitsPerPixel,
+    RecordFromColour.RecordType =
+        if BitsPerPixel = 24 then
+            RGB.Type
+        else if BitsPerPixel = 32 then
+            RgbAlpha.Type
+        else
+            error ErrorMessage.BitsPerPixel,
 
     // Yes, the order is BGR(A). Refer to RGBQUAD and RGBTRIPLE
     RGB.Type      = type [Blue = number, Green = number, Red = number],
     RgbAlpha.Type = type [Blue = number, Green = number, Red = number, Alpha = number],
 
-    // Regular cases
-    RGB.FromRgbColour = RGBTRIPLE,
-    RgbAlpha.FromRgbAlphaColour = RGBQUAD,
-
-    // Sepcial cases
-    RGB.FromRgbAlphaColour = (colour as binary) as record => Record.RemoveFields(RGBQUAD(colour), "a"),
-
-    // The established CoulAdj API says that if it is asked to invent an alpha value, the max alpha
-    //    value will be used. 
-    // No link to this API, because those that are public are in languages whose libraries can't
-    //    tell easily if there is an alpha channel in the source image,
-    // And also, a link doesn't matter, because I'm the one who wrote the CoulAdj API(s).
-    // (Hopefully, by the time this code is pulished, I will have documented the CoulAdj API for Power Query,
-    //    and will have remembered to update this comment with a link or with proper function documentation.)
-    RgbAlpha.FromRgbColour = (colour as binary) as record => RGBTRIPLE(colour) & [a = MaxAlphaValue],
-
-    // MaxAlphaValue is never more than 255 because the bitmap specs only allows up to 8 bits for a component value.
-    // We don't care about the values with less than 8 bits, because this Power Query parser doesn't support
-    //    reading binary values that small.
-    // And we don't support these values because no convenient functions in the library exists to read
-    //    binary values of less than 8 bits.
-    // Also, I have the sneaking suspicion that nowadays, the only use-case for BMP images that aren't
-    //    24 or 32 bits per pixel is to be used internally by Windows desktop applications, and not to
-    //    be stored as files.
-    MaxAlphaValue = 255, 
+    /* Error messages */
+    // These were rescued from removed code
+    ErrorMessage.Compression = "Image uses an unsupported compression method. Only uncompressed images are supported.",
+    ErrorMessage.BitsPerPixel = 
+        "Image has " & Number.ToText(BitsPerPixel) & " bits per pixel, and only 24 and 32 bits per pixel are supported.",
     
-    FromColourFunctions = 
-        /*if Compression = BI_BITFIELDS then
-            error "Image uses bit fields for encoding, and this feature is not supported."
-        else if Compression <> BI_RGB then
-            error "Image uses an unsupported compression method. Only uncompressed images are supported."
 
-        else*/ if BitsPerPixel = 24 then
-            [RGB      =      RGB.FromRgbColour, 
-             RgbAlpha = RgbAlpha.FromRgbColour]
-        else if BitsPerPixel = 32 then
-            [RGB      =      RGB.FromRgbAlphaColour, 
-             RgbAlpha = RgbAlpha.FromRgbAlphaColour]
-
-        else
-            error "Image has " & Number.ToText(BitsPerPixel) & " bits per pixel, and only 24 and 32 bits per pixel are supported.",
-
-    RGB.FromColour      = FromColourFunctions[RGB],
-    RgbAlpha.FromColour = FromColourFunctions[RgbAlpha],
-
+    /* Main Data */
+    PixelArray = Binary.Range(bitmap, PixelArrayOffset, PixelArraySize),
+    ReadPixelArray = BinaryFormat.List(BinaryFormat.Binary(BytesPerPixel)),
+    PixelValues = ReadPixelArray(PixelArray),
 
     /* Coordinates */
     // BMP specs say bottom row comes first
@@ -340,10 +310,8 @@ let
         IsBottomUp = IsBottomUp,
         IsTopDown = IsTopDown,
         PixelArray.AsColours = AllPixels,
-        RGB.FromColour = RGB.FromColour,
-        RGB.Type = RGB.Type,
-        RgbAlpha.FromColour = RgbAlpha.FromColour,
-        RgbAlpha.Type = RgbAlpha.Type,
+        RecordFromColour = RecordFromColour,
+        RecordFromColour.RecordType = RecordFromColour.RecordType,
         ImageHeader = ImageHeader
     ]
 in
