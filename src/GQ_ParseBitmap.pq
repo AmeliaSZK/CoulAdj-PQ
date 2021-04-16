@@ -258,6 +258,9 @@ let
 
 
     /* Conversion To Record */
+    // I tried to make RecordFromColour reorder the fields to RGB(A),
+    //    but it showed a consistent & noticeable performance cost in tests.
+    //    (From 1m35s to 1m41s.)
     RecordFromColour = 
         if BitsPerPixel = 24 then
             RGBTRIPLE
@@ -273,7 +276,7 @@ let
         else
             error ErrorMessage.BitsPerPixel,
 
-    // Yes, the order is BGR(A). Refer to RGBQUAD and RGBTRIPLE
+    // Yes, the order is BGR(A) per bitmap specs
     RGB.Type      = type [Blue = number, Green = number, Red = number],
     RgbAlpha.Type = type [Blue = number, Green = number, Red = number, Alpha = number],
 
