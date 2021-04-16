@@ -268,16 +268,7 @@ let
     PixelValues = ReadPixelArray(PixelArray),
 
     /* Conversion Functions */
-    BluFromColour = (colour as binary) => BinaryFormat.Byte(Binary.Range(colour, 0, 1)),
-    GreFromColour = (colour as binary) => BinaryFormat.Byte(Binary.Range(colour, 1, 1)),
-    RedFromColour = (colour as binary) => BinaryFormat.Byte(Binary.Range(colour, 2, 1)),
-    AlpFromColour = 
-        if HasAlpha then
-            (colour as binary) => BinaryFormat.Byte(Binary.Range(colour, 3, 1))
-        else
-            (colour as binary) => 255,
 
-    Colour.Type   = type binary,
     // Yes, the order is BGR(A). Refer to RGBQUAD and RGBTRIPLE
     RGB.Type      = type [Blue = number, Green = number, Red = number],
     RgbAlpha.Type = type [Blue = number, Green = number, Red = number, Alpha = number],
@@ -337,19 +328,18 @@ let
 
     /* As Table */
     AllPixels = Table.FromColumns({AllRowIndices, AllColIndices, PixelValues}, 
-        type table[row = number, col = number, colour = Colour.Type]),
+        type table[row = number, col = number, colour = binary]),
     
     AsRecord = 
     [
-        //MaxRow = MaxRow,
-        //MaxCol = MaxCol,
-        //BytesPerPixel = BytesPerPixel,
         NbPixels = NbOfPixels,
         NbRows = NbRows,
         NbCols = NbCols,
         HasAlpha = HasAlpha,
+        BytesPerPixel = BytesPerPixel,
+        IsBottomUp = IsBottomUp,
+        IsTopDown = IsTopDown,
         PixelArray.AsColours = AllPixels,
-        Colour.Type = Colour.Type,
         RGB.FromColour = RGB.FromColour,
         RGB.Type = RGB.Type,
         RgbAlpha.FromColour = RgbAlpha.FromColour,
