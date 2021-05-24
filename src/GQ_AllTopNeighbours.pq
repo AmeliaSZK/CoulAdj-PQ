@@ -7,37 +7,19 @@ let
     AllRows = Table.Column(GroupedByRowIndex, "Rows"),
     AlignedTopRow = Table.FromColumns({AllRows, List.Skip(AllRows)}, {"bottom", "Top"}),
     RemovedLastRow = Table.RemoveLastN(AlignedTopRow,1),
-    /* Prepare for filtering */
-    ExpandedBottom = Table.ExpandTableColumn(RemovedLastRow, "bottom", {"row", "colour", "Start", "End"}),
-    KeptTopNeighbours = Table.ExpandTableColumn(ExpandedBottom, "Top", {"colour", "Start", "End"}, {"Top.colour", "Top.Start", "Top.End"}),
 
-    /* Purged identical colours */
-    RemovedSameValues = Table.SelectRows(KeptTopNeighbours, each [colour] <> [Top.colour]),
-
-    /* Top Center */
-    RemovedNonNeighbours = Table.SelectRows(RemovedSameValues, each not ([Top.End] < [Start]) and not ([End] < [Top.Start])),
-    // Top Center neighbours 1 of 2
-    RemovedTopEndsBeforeStart = Table.SelectRows(RemovedSameValues, each not ([Top.End] < [Start])),
-    // Top Center neighbours 2 of 2
-    RemovedEndsBeforeTopStart = Table.SelectRows(RemovedTopEndsBeforeStart, each not ([End] < [Top.Start])),
-
-    /* Diagonals */
-    // Next 2 steps only done if DontRelateDiagonals is true
-    // Top Left neighbours
-//    RemovedStartsAtTopEnd = Table.SelectRows(RemovedEndsBeforeTopStart, each not ([Start] = [Top.End])),
-    RemovedStartsAtTopEnd = Table.SelectRows(RemovedNonNeighbours , each not ([Start] = [Top.End])),
-    // Top Right neighbours
-    RemovedEndsAtTopStart = Table.SelectRows(RemovedStartsAtTopEnd, each not ([End] = [Top.Start])),
-
-    AdjacentTopNeighbours =
-        if DontRelateDiagonals then
-            RemovedEndsAtTopStart
-        else
-//            RemovedEndsBeforeTopStart,
-            RemovedNonNeighbours,
+    /* Merge-sort */
+    AddedThisScanline = Table.AddColumn(RemovedLastRow, "thisScanline", each Table.PrefixColumns([bottom], "this")),
+    AddedNextScanline = Table.AddColumn(AddedThisScanline, "nextScanline", each Table.PrefixColumns([Top], "next")),
+    AddedJoined = Table.AddColumn(AddedNextScanline, "Joined", each Table.Join([thisScanline], "this.Start", [nextScanline], "next.Start", JoinKind.FullOuter, JoinAlgorithm.SortMerge)),
+    AddedFilled = Table.AddColumn(AddedJoined, "Filled", each Table.FillDown([Joined], {"this.colour", "next.colour"})),
+    KeptFilled = Table.SelectColumns(AddedFilled,{"Filled"}),
+    ExpandedFilled = Table.ExpandTableColumn(KeptFilled, "Filled", {"this.colour", "next.colour"}, {"this.colour", "next.colour"}),
+    RenamedForCompatibility = Table.RenameColumns(ExpandedFilled,{{"this.colour", "colour"}, {"next.colour", "Top.colour"}}),
+    RemovedSameValues = Table.SelectRows(RenamedForCompatibility, each [colour] <> [Top.colour]),
 
     /* Keep Ordered Relations */
-    #"Removed Other Columns" = Table.SelectColumns(AdjacentTopNeighbours,{"colour", "Top.colour"}),
+    #"Removed Other Columns" = Table.SelectColumns(RemovedSameValues,{"colour", "Top.colour"}),
     #"Renamed Columns" = Table.RenameColumns(#"Removed Other Columns",{{"Top.colour", "adj_colour"}}),
     #"Added Custom1" = Table.AddColumn(#"Renamed Columns", "MinColour", each List.Min({[colour], [adj_colour]}), type binary),
     #"Added Custom2" = Table.AddColumn(#"Added Custom1", "MaxColour", each List.Max({[colour], [adj_colour]}), type binary),
