@@ -234,3 +234,20 @@ time on documentation right now...)
 | Formatted Output     | 1:34 | 0:06 |
 
 
+# Merge-sort
+These attempts were started several weeks after the previous.
+
+## Baseline
+1:35 with Mortal Empires, before the merge-sort.
+All measurements are done with Mortal Empires in the Merge-sort section.
+
+## First correct implementation
+1:19
+
+Not complete, because we don't use merge-sort for the segments on the same scanline.
+Also, the way diagonals are handled is not ideal, and may be suffering in 
+performance because it isn't properly buffered.
+
+
+
+
