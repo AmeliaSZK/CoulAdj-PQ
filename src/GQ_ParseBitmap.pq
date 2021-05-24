@@ -151,7 +151,8 @@ let
     ]),
 
     // I found no Microsoft reference for what the FXPT2DOT30 is.
-    // But answers in this StackOverflow question say that...
+    // But I found a StackOverflow question: https://stackoverflow.com/questions/20864752/how-is-defined-the-data-type-fxpt2dot30-in-the-bmp-file-structure
+    // And the answers in this StackOverflow question say that...
     //    1) It's a fixed-point value with a 2-bit integer part and 30-bit fractional part
     //    2) Someone wrote an unpacked version and assigned them to LONG.
     // LONG is a signed type, and I am dubious that one of the two integer bits would be used as the sign bit.
@@ -227,14 +228,14 @@ let
     ImageHeader = Headers[ImageHeader],
 
 
-    /* Integrity checks */
-    /*
-    HeaderField          = List.Transform(List.Range(Binary.ToList(bitmap), 0, 2), Character.FromNumber), // Must be "BM"
-    */
-
     /* Important infos */
     Width                = ImageHeader[Width], 
-    Height               = ImageHeader[Height], 
+    Height               = Number.Abs(ImageHeader[Height]), 
+    // Positive Height is bottom-up, and negative is top-down
+    // https://docs.microsoft.com/en-us/previous-versions/dd183376(v=vs.85)#members
+    IsBottomUp           = 0 < ImageHeader[Height],
+    IsTopDown            = not IsBottomUp,
+
     BitsPerPixel         = ImageHeader[BitCount], 
     BytesPerPixel        = BitsPerPixel / 8,
     NbOfPixels           = Width * Height,
@@ -246,10 +247,7 @@ let
     //    2) And anyway, the specs say that you can put zero in this field with BI_RGB compression
     PixelArraySize       = NbOfPixels * BytesPerPixel, 
     HasAlpha             = (BytesPerPixel = 4),
-    // Positive Height is bottom-up, and negative is top-down
-    // https://docs.microsoft.com/en-us/previous-versions/dd183376(v=vs.85)#members
-    IsBottomUp           = 0 < Height,
-    IsTopDown            = not IsBottomUp,
+
 
     NbRows = Height,
     NbCols = Width,
@@ -293,9 +291,10 @@ let
     PixelValues = ReadPixelArray(PixelArray),
 
     /* Coordinates */
-    // BMP specs say bottom row comes first
-    RowIndices = List.Numbers(MaxRow, NbRows, -1),
-    ColIndices = List.Numbers(     0, NbCols,  1),
+    // Wether image is bottom-up or top-down, BMP specs make sure that 
+    // the first row in the file is #0.
+    RowIndices = List.Numbers(0, NbRows, 1),
+    ColIndices = List.Numbers(0, NbCols, 1),
     AllRowIndices = List.Combine(List.Transform(RowIndices, each List.Repeat({_}, NbCols))),
     AllColIndices = List.Repeat(ColIndices, NbRows),
 
