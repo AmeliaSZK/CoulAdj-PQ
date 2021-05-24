@@ -1,0 +1,1 @@
+"sample_size_1" meta [IsParameterQuery=true, List={"warhammer_map_1_1_shadow", "wh2_main_great_vortex_map_6", "sample_size_1", "sample_size_2", "sample_size_4", "sample_size_8", "sample_size_16", "sample_size_32", "sample_size_64", "sample_size_128", "sample_size_256", "sample_size_512"}, DefaultValue="sample_size_1", Type="Text", IsParameterQueryRequired=true]

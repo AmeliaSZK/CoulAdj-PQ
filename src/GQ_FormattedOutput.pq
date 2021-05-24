@@ -1,31 +1,50 @@
 let
-    DecodeColour = 
-        if GQ_IncludeAlpha then 
-            GQ_Result_ParseBitmap[RgbAlpha.FromColour]
-        else
-            GQ_Result_ParseBitmap[RGB.FromColour],
-    DecodedType = 
-        if GQ_IncludeAlpha then 
-            GQ_Result_ParseBitmap[RgbAlpha.Type]
-        else
-            GQ_Result_ParseBitmap[RGB.Type],
+    // The CoulAdj API specifies the column names and the order in which they appear, and these names
+    //    are different from what ParseBitmap returns.
+    ColumnRenames =
+    if GQ_Result_ParseBitmap[HasAlpha] then
+        {
+            {"Red",   "r"},
+            {"Green", "g"},
+            {"Blue",  "b"},
+            {"Alpha", "a"},
+            {"adj_Red",   "adj_r"},
+            {"adj_Green", "adj_g"},
+            {"adj_Blue",  "adj_b"},
+            {"adj_Alpha", "adj_a"}
+        }
+    else
+        {
+            {"Red",   "r"},
+            {"Green", "g"},
+            {"Blue",  "b"},
+            {"adj_Red",   "adj_r"},
+            {"adj_Green", "adj_g"},
+            {"adj_Blue",  "adj_b"}
+        },
 
-    ColumnNames = 
-        if GQ_IncludeAlpha then 
-            {"r", "g", "b", "a"}
-        else
-            {"r", "g", "b"},
-    AdjColumnNames = 
-        if GQ_IncludeAlpha then 
-            {"adj_r", "adj_g", "adj_b", "adj_a"}
-        else
-            {"adj_r", "adj_g", "adj_b"},
+    // The order of the fields returned by ParseBitmap isn't guaranteed,
+    //    but the CoulAdj API does guarantee it.
+    ColumnOrder = 
+    if GQ_Result_ParseBitmap[HasAlpha] then
+        {"r", "g", "b", "a", "adj_r", "adj_g", "adj_b", "adj_a"}
+    else
+        {"r", "g", "b", "adj_r", "adj_g", "adj_b"},
+
+    RecordFromColour = GQ_Result_ParseBitmap[RecordFromColour],
+    RecordFromColour.RecordType = GQ_Result_ParseBitmap[RecordFromColour.RecordType],
+
+    FieldNames = Record.FieldNames(Type.RecordFields(RecordFromColour.RecordType)),
+    ColumnNames = FieldNames,
+    AdjColumnNames = List.Transform(ColumnNames, each "adj_" & _),
 
     Source = GQ_AllAdjacencies,
-    #"Added Custom" = Table.AddColumn(Source, "decoded", each DecodeColour([colour]), (DecodedType)),
-    #"Added Custom1" = Table.AddColumn(#"Added Custom", "adj_decoded", each DecodeColour([adj_colour]), (DecodedType)),
-    #"Removed Other Columns" = Table.SelectColumns(#"Added Custom1",{"decoded", "adj_decoded"}),
-    #"Expanded {0}" = Table.ExpandRecordColumn(#"Removed Other Columns", "decoded", ColumnNames, ColumnNames),
-    #"Expanded {0}1" = Table.ExpandRecordColumn(#"Expanded {0}", "adj_decoded", ColumnNames, AdjColumnNames)
+    AddedDecoded = Table.AddColumn(Source, "decoded", each RecordFromColour([colour]), RecordFromColour.RecordType),
+    AddedAdjDecoded = Table.AddColumn(AddedDecoded, "adj_decoded", each RecordFromColour([adj_colour]), RecordFromColour.RecordType),
+    KeptDecodedColumns = Table.SelectColumns(AddedAdjDecoded,{"decoded", "adj_decoded"}),
+    ExpandedDecoded = Table.ExpandRecordColumn(KeptDecodedColumns, "decoded", FieldNames, ColumnNames),
+    ExpandedAdjDecoded = Table.ExpandRecordColumn(ExpandedDecoded, "adj_decoded", FieldNames, AdjColumnNames),
+    RenamedColumnsPerCoulAdjAPI = Table.RenameColumns(ExpandedAdjDecoded, ColumnRenames),
+    ReorderedColumnsPerCoulAdjAPI = Table.ReorderColumns(RenamedColumnsPerCoulAdjAPI, ColumnOrder)
 in
-    #"Expanded {0}1"
+    ReorderedColumnsPerCoulAdjAPI
