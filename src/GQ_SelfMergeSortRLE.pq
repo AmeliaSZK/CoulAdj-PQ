@@ -1,10 +1,10 @@
 let
-    // Parameters
-    #"Left Diagonal" = "This step is only there to put a note in the step list to indicate what is being done.",
-    thisKeys = {"This.NextRow", "This.Start"} as any,
-    nextKeys = {"Next.Row", "Next.End"} as any,
-    joinKind = JoinKind.Inner as number,
-
+    GQ_SelfMergeSortRLE = (
+        thisKeys as list,
+        nextKeys as list,
+        joinKind as number
+    ) as table =>
+let
     // Prologue
     RLEnconded = GQ_Result_EncodeRunLength,
     Source = Table.AddColumn(RLEnconded, "NextRow", each [row] + 1, type number),
@@ -23,3 +23,5 @@ let
     RenamedColumnsForOutput = Table.RenameColumns(RemovedDuplicates,{{"This.Colour", "colour"}, {"Next.Colour", "adj_colour"}})
 in
     RenamedColumnsForOutput
+in
+    GQ_SelfMergeSortRLE
