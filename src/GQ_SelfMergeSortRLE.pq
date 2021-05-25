@@ -12,19 +12,14 @@ let
     BufferedSource = Table.Buffer(RenamedColumnsForInput),
     This.BufferedSource = Table.PrefixColumns(BufferedSource, "This"),
     Next.BufferedSource = Table.PrefixColumns(BufferedSource, "Next"),
+
     // Join
     Joined = Table.Join(This.BufferedSource, thisKeys, Next.BufferedSource, nextKeys, joinKind, JoinAlgorithm.SortMerge),
     Filled = 
         if joinKind = JoinKind.Inner then
             Joined
         else if joinKind = JoinKind.FullOuter then
-            if List.ContainsAll(thisKeys & nextKeys, {"This.Start", "Next.Start"}) then
-                Table.RemoveFirstN(Table.FillDown(Joined,{"This.Colour", "Next.Colour"}), each [This.Colour] is null)
-            else if List.ContainsAll(thisKeys & nextKeys, {"This.End", "Next.End"}) then
-                Table.RemoveLastN( Table.FillUp(  Joined,{"This.Colour", "Next.Colour"}), each [Next.Colour] is null)
-            else
-                error "Are you SURE you want a full outer join on This.Start & Next.End or This.End & Next.Start ? "
-                      & "If so, you'll need to modify the source code, because I didn't account for this possibility."
+            error "FullOuter joins require too much special handling; they are not supported by this function."
         else
             error "Support for join kinds other than Inner or FullOuter has not been implemented.",
 

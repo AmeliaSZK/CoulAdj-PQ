@@ -32,9 +32,17 @@ let
         else
             error "Support for join kinds other than Inner or FullOuter has not been implemented.",
 
+    // Debug
+    FilledDown = Table.FillDown(Joined,{"This.Colour", "Next.Colour"}),
+    RemovedNulls = Table.RemoveFirstN(FilledDown,  each [This.Colour] is null),
+
     // Remove reflexive relations (when both colours are the same)
-    FilteredSameColours = Table.SelectRows(Filled, each [This.Colour] <> [Next.Colour]),
-    KeptColourColumns = Table.SelectColumns(FilteredSameColours,{"This.Colour", "Next.Colour"}),
+    FilteredSameColours = Table.SelectRows(RemovedNulls, each [This.Colour] <> [Next.Colour]),
+    #"Added Custom3" = Table.AddColumn(FilteredSameColours, "This", each RecordFromColour([This.Colour]), RecordFromColour.RecordType),
+    #"Expanded {0}3" = Table.ExpandRecordColumn(#"Added Custom3", "This", {"Alpha"}, {"This.Alpha"}),
+    #"Added Custom2" = Table.AddColumn(#"Expanded {0}3", "Next", each RecordFromColour([Next.Colour]), RecordFromColour.RecordType),
+    #"Expanded {0}2" = Table.ExpandRecordColumn(#"Added Custom2", "Next", {"Alpha"}, {"Next.Alpha"}),
+    KeptColourColumns = Table.SelectColumns(#"Expanded {0}2",{"This.Colour", "Next.Colour"}),
     RemovedDuplicates = Table.Distinct(KeptColourColumns),
 
     // Remove symmetrical relations (A->B implies B->A, so if we already have A->B, this will remove B->A)
