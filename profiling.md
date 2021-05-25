@@ -255,10 +255,10 @@ performance because it isn't properly buffered.
 Durations are in minutes:seconds.fractionalSeconds
 
 | Count   | Generate | Distinct |
-| 100     | 0:00.10  |  |
-| 1000    | 0:00.13  |  |
-| 10,000  | 0:00.11  |  |
-| 100,000 | 0:00.34  |  |
+| 100     | 0:00.10  | 0:00.10 |
+| 1000    | 0:00.13  | 0:00.10 |
+| 10,000  | 0:00.11  | 0:00.15 |
+| 100,000 | 0:00.34  | 0:00.21 |
 
 
 
