@@ -270,6 +270,8 @@ These results are really confusing lol.
 ## Restored support for DontRelateDiagonals
 1:17
 
+## Different way of supporting DontRelateDiagonals
+1:23
 
 
 
