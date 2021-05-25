@@ -25,7 +25,8 @@ in
     
     /* (Boilerplate) Expand & keep consecutives */
     #"Removed Other Columns1" = Table.SelectColumns(#"Filtered Rows",{"ProcessedSegments"}),
-    #"Expanded {0}" = Table.ExpandTableColumn(#"Removed Other Columns1", "ProcessedSegments", {"MinColour", "MaxColour"}, {"MinColour", "MaxColour"})
+    #"Expanded {0}" = Table.ExpandTableColumn(#"Removed Other Columns1", "ProcessedSegments", {"MinColour", "MaxColour"}, {"MinColour", "MaxColour"}),
+    #"Removed Duplicates" = Table.Distinct(#"Expanded {0}")
     
 /*
     // Order the relations 
@@ -37,4 +38,4 @@ in
 */
 
 in
-    #"Expanded {0}"
+    #"Removed Duplicates"
