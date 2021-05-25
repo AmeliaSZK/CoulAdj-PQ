@@ -1,8 +1,11 @@
 let
+    // Debug
+    RecordFromColour = GQ_Result_ParseBitmap[RecordFromColour],
+    RecordFromColour.RecordType = GQ_Result_ParseBitmap[RecordFromColour.RecordType],
+
     // Parameters
-    #"Left Diagonal" = "This step is only there to put a note in the step list to indicate what is being done.",
-    thisKeys = {"This.NextRow", "This.End"} as any,
-    nextKeys = {"Next.Row", "Next.End"} as any,
+    thisKeys = {"This.NextRow", "This.Start"} as any,
+    nextKeys = {"Next.Row", "Next.Start"} as any,
     joinKind = JoinKind.FullOuter as number,
 
     // Prologue
@@ -38,6 +41,10 @@ let
     AddedMinColour = Table.AddColumn(RemovedDuplicates , "MinColour", each List.Min({[This.Colour], [Next.Colour]}), type binary),
     AddedMaxColour = Table.AddColumn(AddedMinColour, "MaxColour", each List.Max({[This.Colour], [Next.Colour]}), type binary),
     KeptMinMaxColours = Table.SelectColumns(AddedMaxColour,{"MinColour", "MaxColour"}),
-    RemovedMinMaxDuplicates = Table.Distinct(KeptMinMaxColours)
+    RemovedMinMaxDuplicates = Table.Distinct(KeptMinMaxColours),
+    #"Added Custom" = Table.AddColumn(RemovedMinMaxDuplicates, "Min", each RecordFromColour([MinColour]), RecordFromColour.RecordType),
+    #"Added Custom1" = Table.AddColumn(#"Added Custom", "Max", each RecordFromColour([MaxColour]), RecordFromColour.RecordType),
+    #"Expanded {0}" = Table.ExpandRecordColumn(#"Added Custom1", "Min", {"Blue", "Green", "Red", "Alpha"}, {"Min.Blue", "Min.Green", "Min.Red", "Min.Alpha"}),
+    #"Expanded {0}1" = Table.ExpandRecordColumn(#"Expanded {0}", "Max", {"Blue", "Green", "Red", "Alpha"}, {"Max.Blue", "Max.Green", "Max.Red", "Max.Alpha"})
 in
-    RemovedMinMaxDuplicates
+    #"Expanded {0}1"
