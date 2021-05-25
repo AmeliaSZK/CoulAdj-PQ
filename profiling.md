@@ -249,5 +249,14 @@ Also, the way diagonals are handled is not ideal, and may be suffering in
 performance because it isn't properly buffered.
 
 
+## Buffered subtables
+1:18
+
+Not significant imo
+
+## Same as above, but a day later
+1:27
+
+Welp, looks like we have a lot of variability lol
 
 
