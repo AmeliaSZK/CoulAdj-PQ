@@ -7,11 +7,8 @@ let
 let
     // Prologue
     RLEnconded = GQ_Result_EncodeRunLength,
-    Source = Table.AddColumn(RLEnconded, "NextRow", each [row] + 1, type number),
-    RenamedColumnsForInput = Table.RenameColumns(Source,{{"row", "Row"}, {"colour", "Colour"}}),
-    BufferedSource = Table.Buffer(RenamedColumnsForInput),
-    This.BufferedSource = Table.PrefixColumns(BufferedSource, "This"),
-    Next.BufferedSource = Table.PrefixColumns(BufferedSource, "Next"),
+    This.BufferedSource = Table.PrefixColumns(RLEnconded, "This"),
+    Next.BufferedSource = Table.PrefixColumns(RLEnconded, "Next"),
 
     // Join
     Joined = Table.Join(This.BufferedSource, thisKeys, Next.BufferedSource, nextKeys, joinKind, JoinAlgorithm.SortMerge),
