@@ -248,6 +248,17 @@ Not complete, because we don't use merge-sort for the segments on the same scanl
 Also, the way diagonals are handled is not ideal, and may be suffering in 
 performance because it isn't properly buffered.
 
+## 2nd implementation
+1:43
+
+## Table.Distinct Big O
+Durations are in minutes:seconds.fractionalSeconds
+
+| Count   | Generate | Distinct |
+| 100     | 0:00.10  |  |
+| 1000    | 0:00.13  |  |
+| 10,000  | 0:00.11  |  |
+| 100,000 | 0:00.34  |  |
 
 
 
