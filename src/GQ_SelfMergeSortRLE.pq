@@ -12,12 +12,24 @@ let
     BufferedSource = Table.Buffer(RenamedColumnsForInput),
     This.BufferedSource = Table.PrefixColumns(BufferedSource, "This"),
     Next.BufferedSource = Table.PrefixColumns(BufferedSource, "Next"),
-
     // Join
     Joined = Table.Join(This.BufferedSource, thisKeys, Next.BufferedSource, nextKeys, joinKind, JoinAlgorithm.SortMerge),
+    Filled = 
+        if joinKind = JoinKind.Inner then
+            Joined
+        else if joinKind = JoinKind.FullOuter then
+            if List.ContainsAll(thisKeys & nextKeys, {"This.Start", "Next.Start"}) then
+                Table.RemoveFirstN(Table.FillDown(Joined,{"This.Colour", "Next.Colour"}), each [This.Colour] is null)
+            else if List.ContainsAll(thisKeys & nextKeys, {"This.End", "Next.End"}) then
+                Table.RemoveLastN( Table.FillUp(  Joined,{"This.Colour", "Next.Colour"}), each [Next.Colour] is null)
+            else
+                error "Are you SURE you want a full outer join on This.Start & Next.End or This.End & Next.Start ? "
+                      & "If so, you'll need to modify the source code, because I didn't account for this possibility."
+        else
+            error "Support for join kinds other than Inner or FullOuter has not been implemented.",
 
     // Remove reflexive relations (when both colours are the same)
-    FilteredSameColours = Table.SelectRows(Joined, each [This.Colour] <> [Next.Colour]),
+    FilteredSameColours = Table.SelectRows(Filled, each [This.Colour] <> [Next.Colour]),
     KeptColourColumns = Table.SelectColumns(FilteredSameColours,{"This.Colour", "Next.Colour"}),
     RemovedDuplicates = Table.Distinct(KeptColourColumns),
 
@@ -27,6 +39,6 @@ let
     KeptMinMaxColours = Table.SelectColumns(AddedMaxColour,{"MinColour", "MaxColour"}),
     RemovedMinMaxDuplicates = Table.Distinct(KeptMinMaxColours)
 in
-    RemovedMinMaxDuplicates 
+    RemovedMinMaxDuplicates
 in
     GQ_SelfMergeSortRLE
