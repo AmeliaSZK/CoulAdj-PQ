@@ -1,7 +1,7 @@
 let
-    thisKeys = {"This.Row", "This.End"},
-    nextKeys = {"Next.Row", "Next.Start"},
+    thisKeys = {"This.NextRow", "This.Start"},
+    nextKeys = {"Next.Row", "Next.End"},
     joinKind = JoinKind.Inner,
-    RightNeighbours = GQ_SelfMergeSortRLE(thisKeys, nextKeys, joinKind)
+    TopLeftNeighbours = GQ_SelfMergeSortRLE(thisKeys, nextKeys, joinKind)
 in
-    RightNeighbours
+    TopLeftNeighbours
