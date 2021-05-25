@@ -9,8 +9,8 @@ let
     RemovedLastRow = Table.RemoveLastN(AlignedTopRow,1),
 
     /* Merge-sort */
-    AddedThisScanline = Table.AddColumn(RemovedLastRow, "thisScanline", each Table.Buffer(Table.PrefixColumns([bottom], "this"))),
-    AddedNextScanline = Table.AddColumn(AddedThisScanline, "nextScanline", each Table.Buffer(Table.PrefixColumns([Top], "next"))),
+    AddedThisScanline = Table.AddColumn(RemovedLastRow, "thisScanline", each Table.PrefixColumns([bottom], "this")),
+    AddedNextScanline = Table.AddColumn(AddedThisScanline, "nextScanline", each Table.PrefixColumns([Top], "next")),
     AddedJoined = Table.AddColumn(AddedNextScanline, "Joined", each Table.Join([thisScanline], "this.Start", [nextScanline], "next.Start", JoinKind.FullOuter, JoinAlgorithm.SortMerge)),
     AddedJoinedDiagStartEnd = Table.AddColumn(AddedJoined, "JoinedDiagStartEnd", each Table.Join([thisScanline], "this.Start", [nextScanline], "next.End",   JoinKind.Inner, JoinAlgorithm.SortMerge)),
     AddedJoinedDiagEndStart = Table.AddColumn(AddedJoinedDiagStartEnd, "JoinedDiagEndStart", each Table.Join([thisScanline], "this.End",   [nextScanline], "next.Start", JoinKind.Inner, JoinAlgorithm.SortMerge)),

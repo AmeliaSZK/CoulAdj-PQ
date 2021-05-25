@@ -259,4 +259,12 @@ Not significant imo
 
 Welp, looks like we have a lot of variability lol
 
+## Removed buffering of subtables
+1:18
+
+These results are really confusing lol.
+
+
+
+
 
