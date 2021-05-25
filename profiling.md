@@ -254,14 +254,18 @@ performance because it isn't properly buffered.
 ## Table.Distinct Big O
 Durations are in minutes:seconds.fractionalSeconds
 
-| Count   | Generate | Distinct |
-| 100     | 0:00.10  | 0:00.10  |
-| 1000    | 0:00.13  | 0:00.10  |
-| 10,000  | 0:00.11  | 0:00.15  |
-| 100,000 | 0:00.34  | 0:00.21  |
-| 1,000,000   |      | 0:01.17  |
-| 10,000,000  |      | 0:07.55  |
-| 100,000,000 |      | 1:15.07  |
+| Count   | Generate | Distinct | n / s |
+|---------|----------|----------|--------------------|
+| 100     | 0:00.10  | 0:00.10  | 1,000 |
+| 1000    | 0:00.13  | 0:00.10  | 100,000 |
+| 10,000  | 0:00.11  | 0:00.15  | 66,667 |
+| 100,000 | 0:00.34  | 0:00.21  | 476,190 |
+| 1,000,000   |      | 0:01.17  | 854,701 |
+| 10,000,000  |      | 0:07.55  | 1,324,503 |
+| 100,000,000 |      | 1:15.07  | 1,332,090 |
+
+In conclusion, it appears that Table.Distinct is O(n) ?!
+Or at least, it is when processing numbers?
 
 
 
