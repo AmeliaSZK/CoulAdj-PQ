@@ -16,10 +16,15 @@ let
     // Join
     Joined = Table.Join(This.BufferedSource, thisKeys, Next.BufferedSource, nextKeys, joinKind, JoinAlgorithm.SortMerge),
 
-    // Epilogue
+    // Remove reflexive relations (when both colours are the same)
     FilteredSameColours = Table.SelectRows(Joined, each [This.Colour] <> [Next.Colour]),
     KeptColourColumns = Table.SelectColumns(FilteredSameColours,{"This.Colour", "Next.Colour"}),
     RemovedDuplicates = Table.Distinct(KeptColourColumns),
-    RenamedColumnsForOutput = Table.RenameColumns(RemovedDuplicates,{{"This.Colour", "colour"}, {"Next.Colour", "adj_colour"}})
+
+    // Remove symmetrical relations (A->B implies B->A, so if we already have A->B, this will remove B->A)
+    AddedMinColour = Table.AddColumn(RemovedDuplicates , "MinColour", each List.Min({[This.Colour], [Next.Colour]}), type binary),
+    AddedMaxColour = Table.AddColumn(AddedMinColour, "MaxColour", each List.Max({[This.Colour], [Next.Colour]}), type binary),
+    KeptMinMaxColours = Table.SelectColumns(AddedMaxColour,{"MinColour", "MaxColour"}),
+    RemovedMinMaxDuplicates = Table.Distinct(KeptMinMaxColours)
 in
-    RenamedColumnsForOutput
+    RemovedMinMaxDuplicates
