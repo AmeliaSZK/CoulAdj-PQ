@@ -15,7 +15,7 @@ let
     AddedJoinedDiagStartEnd = Table.AddColumn(AddedJoined, "JoinedDiagStartEnd", each Table.Join([thisScanline], "this.Start", [nextScanline], "next.End",   JoinKind.Inner, JoinAlgorithm.SortMerge)),
     AddedJoinedDiagEndStart = Table.AddColumn(AddedJoinedDiagStartEnd, "JoinedDiagEndStart", each Table.Join([thisScanline], "this.End",   [nextScanline], "next.Start", JoinKind.Inner, JoinAlgorithm.SortMerge)),
     AddedFilled = Table.AddColumn(AddedJoinedDiagEndStart, "Filled", each Table.FillDown([Joined], {"this.colour", "next.colour"})),
-    AddedCombined = Table.AddColumn(AddedFilled, "Combined", each Table.Combine({[Filled], [JoinedDiagStartEnd], [JoinedDiagEndStart]})),
+    AddedCombined = Table.AddColumn(AddedFilled, "Combined", if DontRelateDiagonals then each [Filled] else each Table.Combine({[Filled], [JoinedDiagStartEnd], [JoinedDiagEndStart]})),
     KeptCombined = Table.SelectColumns(AddedCombined,{"Combined"}),
     ExpandedCombined = Table.ExpandTableColumn(KeptCombined, "Combined", {"this.colour", "next.colour"}, {"this.colour", "next.colour"}),
     RenamedForCompatibility = Table.RenameColumns(ExpandedCombined,{{"this.colour", "colour"}, {"next.colour", "Top.colour"}}),

@@ -267,6 +267,9 @@ These results are really confusing lol.
 ## Added intermediary purge of duplicates in RightNeighbours
 1:13
 
+## Restored support for DontRelateDiagonals
+1:17
+
 
 
 
