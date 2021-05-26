@@ -54,17 +54,18 @@ let
     /* Group Segments by Row Index */
     KeptRowAndColourFromRLE = Table.SelectColumns(RLEncoded,{"row", "colour"}),
     GroupedSegments = Table.Group(KeptRowAndColourFromRLE, {"row"}, {{"Segments", each _, type table [row = number, colour = binary]}}, GroupKind.Local),
-    #"Added Custom1" = Table.AddColumn(GroupedSegments, "Segments.AsList", each Table.Column([Segments], "colour")),
-    #"Added Custom2" = Table.AddColumn(#"Added Custom1", "Consecutives", each Table.FromColumns({List.RemoveLastN([Segments.AsList],1), List.RemoveFirstN([Segments.AsList],1)}, type table[colour = binary, adj_colour = binary])),
-    #"Added Custom3" = Table.AddColumn(#"Added Custom2", "OrderedRelations", each ExtractOrderedRelations([Consecutives], "colour", "adj_colour"), type table[MinColour = binary, MaxColour = binary]),
-
-    #"Filtered Rows" = Table.SelectRows(#"Added Custom3", each not (Table.IsEmpty([OrderedRelations]))),
+    AddedSegmentsAsList = Table.AddColumn(GroupedSegments, "Segments.AsList", each Table.Column([Segments], "colour")),
+    AddedConsecutives = Table.AddColumn(AddedSegmentsAsList, "Consecutives", each Table.FromColumns({List.RemoveLastN([Segments.AsList],1), List.RemoveFirstN([Segments.AsList],1)}, type table[colour = binary, adj_colour = binary])),
+    AddedOrderedConsecutives = Table.AddColumn(AddedConsecutives, "OrderedConsecutives", each ExtractOrderedRelations([Consecutives], "colour", "adj_colour"), type table[MinColour = binary, MaxColour = binary]),
+    // This is necessary because if all the pixels in a scanline are the same colour, its subtable will be empty,
+    // and this will create error later on. This case is present in the Total War Warhammer 2 Vortex map.
+    FilteredEmptyOrderedConsecutives = Table.SelectRows(AddedOrderedConsecutives, each not (Table.IsEmpty([OrderedConsecutives]))),
     
     /* (Boilerplate) Expand & keep consecutives */
-    #"Removed Other Columns3" = Table.SelectColumns(#"Filtered Rows",{"OrderedRelations"}),
-    #"Expanded {0}" = Table.ExpandTableColumn(#"Removed Other Columns3", "OrderedRelations", {"MinColour", "MaxColour"}, {"MinColour", "MaxColour"}),
-    #"Removed Duplicates1" = Table.Distinct(#"Expanded {0}"),
-    RightNeighbours = #"Removed Duplicates1",
+    KeptOrderedConsecutives = Table.SelectColumns(FilteredEmptyOrderedConsecutives,{"OrderedConsecutives"}),
+    ExpandedOrderedConsecutives = Table.ExpandTableColumn(KeptOrderedConsecutives, "OrderedConsecutives", {"MinColour", "MaxColour"}, {"MinColour", "MaxColour"}),
+    PurgedDuplicateRightNeighbours = Table.Distinct(ExpandedOrderedConsecutives),
+    RightNeighbours = PurgedDuplicateRightNeighbours,
 
     #"~ALL UNIQUE RELATIONS~" = "This step is to have a separator in the list of steps in the GUI",
     /* Combine all unique ordered relations */
