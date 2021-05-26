@@ -54,25 +54,15 @@ let
     /* Group Segments by Row Index */
     KeptRowAndColourFromRLE = Table.SelectColumns(RLEncoded,{"row", "colour"}),
     GroupedSegments = Table.Group(KeptRowAndColourFromRLE, {"row"}, {{"Segments", each _, type table [row = number, colour = binary]}}, GroupKind.Local),
+    #"Added Custom1" = Table.AddColumn(GroupedSegments, "Segments.AsList", each Table.Column([Segments], "colour")),
+    #"Added Custom2" = Table.AddColumn(#"Added Custom1", "Consecutives", each Table.FromColumns({List.RemoveLastN([Segments.AsList],1), List.RemoveFirstN([Segments.AsList],1)}, type table[colour = binary, adj_colour = binary])),
+    #"Added Custom3" = Table.AddColumn(#"Added Custom2", "OrderedRelations", each ExtractOrderedRelations([Consecutives], "colour", "adj_colour"), type table[MinColour = binary, MaxColour = binary]),
 
-    /* Join consecutive segments */
-    ProcessSubtable = (table as table) as table =>
-    let
-        Segments = Table.Column(table, "colour"),
-        Consecutives = Table.FromColumns(
-            {Segments, List.Skip(Segments, 1)},
-            type table[colour = binary, adj_colour = binary]
-        ),
-        RemovedLastRow = Table.RemoveLastN(Consecutives,1),
-        OrderedRelations = ExtractOrderedRelations(RemovedLastRow, "colour", "adj_colour")
-    in
-        OrderedRelations,
-    #"Added Custom" = Table.AddColumn(GroupedSegments, "ProcessedSegments", each ProcessSubtable([Segments]), type table[MinColour = binary, MaxColour = binary]),
-    #"Filtered Rows" = Table.SelectRows(#"Added Custom", each not (Table.IsEmpty([ProcessedSegments]))),
+    #"Filtered Rows" = Table.SelectRows(#"Added Custom3", each not (Table.IsEmpty([OrderedRelations]))),
     
     /* (Boilerplate) Expand & keep consecutives */
-    #"Removed Other Columns3" = Table.SelectColumns(#"Filtered Rows",{"ProcessedSegments"}),
-    #"Expanded {0}" = Table.ExpandTableColumn(#"Removed Other Columns3", "ProcessedSegments", {"MinColour", "MaxColour"}, {"MinColour", "MaxColour"}),
+    #"Removed Other Columns3" = Table.SelectColumns(#"Filtered Rows",{"OrderedRelations"}),
+    #"Expanded {0}" = Table.ExpandTableColumn(#"Removed Other Columns3", "OrderedRelations", {"MinColour", "MaxColour"}, {"MinColour", "MaxColour"}),
     #"Removed Duplicates1" = Table.Distinct(#"Expanded {0}"),
     RightNeighbours = #"Removed Duplicates1",
 
