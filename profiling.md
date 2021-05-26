@@ -273,5 +273,7 @@ These results are really confusing lol.
 ## Different way of supporting DontRelateDiagonals
 1:23
 
+## Same code, but I was away from my computer for 3 hours
+1:18
 
 
