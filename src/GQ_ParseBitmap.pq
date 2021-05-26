@@ -1,6 +1,23 @@
 let
-    ParseBitmap = (bitmap as binary) as record =>
+    Documentation = type function(
+        bitmap as (type binary meta [
+            Documentation.FieldCaption = "Bitmap Image File"
+        ])
+    ) as record meta [
+        Documentation.Name = "GQ_ParseBitmap",
+        Documentation.LongDescription = "Start the description with an action verb and a 1-sentence description of what the function does. ",
+        Documentation.Examples = {[
+            Description = "(Extract the pixel array?)",
+            Code = "GQ_FunctionTemplate(""Amélia"")",
+            Result = """Hello Amélia"""
+        ],[
+            Description = "(Convert colours to RGB?)",
+            Code = "GQ_FunctionTemplate()",
+            Result = """Hello"""
+        ]}
+    ],
 
+    ParseBitmap = (bitmap as binary) as record =>
 let 
     /* DATA TYPES */
     // Number of bits and signedness:
@@ -330,7 +347,8 @@ let
         ImageHeader = ImageHeader
     ]
 in
-    AsRecord
+    AsRecord,
 
+    DocumentedCall = Value.ReplaceType(ParseBitmap, Documentation)
 in
-    ParseBitmap
+    DocumentedCall
