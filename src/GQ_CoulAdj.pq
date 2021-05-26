@@ -35,18 +35,20 @@ let
             Table.AddColumn(AddedFilled, "Combined", each Table.Combine({[Filled], [JoinedDiagStartEnd], [JoinedDiagEndStart]})),
     KeptCombined = Table.SelectColumns(AddedCombined,{"Combined"}),
     ExpandedCombined = Table.ExpandTableColumn(KeptCombined, "Combined", {"this.colour", "next.colour"}, {"this.colour", "next.colour"}),
-    RenamedForCompatibility = Table.RenameColumns(ExpandedCombined,{{"this.colour", "colour"}, {"next.colour", "Top.colour"}}),
-    RemovedSameValues = Table.SelectRows(RenamedForCompatibility, each [colour] <> [Top.colour]),
+    RemovedSameValues = Table.SelectRows(ExpandedCombined, each [this.colour] <> [next.colour]),
 
-    /* Keep Ordered Relations */
-    #"Removed Other Columns" = Table.SelectColumns(RemovedSameValues,{"colour", "Top.colour"}),
-    #"Renamed Columns" = Table.RenameColumns(#"Removed Other Columns",{{"Top.colour", "adj_colour"}}),
-    #"Added Custom1" = Table.AddColumn(#"Renamed Columns", "MinColour", each List.Min({[colour], [adj_colour]}), type binary),
-    #"Added Custom2" = Table.AddColumn(#"Added Custom1", "MaxColour", each List.Max({[colour], [adj_colour]}), type binary),
-    #"Removed Other Columns1" = Table.SelectColumns(#"Added Custom2",{"MinColour", "MaxColour"}),
-    /* Purge Dupicate ordered relations */
-    #"Removed Duplicates" = Table.Distinct(#"Removed Other Columns1"),
-    AllTopNeighbours = #"Removed Duplicates",
+    ExtractOrderedRelations = (table as table, columnA as text, columnB as text) as table =>
+        let
+            KeptColourColumns = Table.SelectColumns(table, {columnA, columnB}),
+            RenamedToKnownNames = Table.RenameColumns(KeptColourColumns,{{columnA, "colour"}, {columnB, "adj_colour"}}),
+            AddedMinColour = Table.AddColumn(RenamedToKnownNames, "MinColour", each List.Min({[colour], [adj_colour]}), type binary),
+            AddedMaxColour = Table.AddColumn(AddedMinColour, "MaxColour", each List.Max({[colour], [adj_colour]}), type binary),
+            KeptMinMaxColumns = Table.SelectColumns(AddedMaxColour, {"MinColour", "MaxColour"}),
+            PurgedDuplicates = Table.Distinct(KeptMinMaxColumns)
+        in
+            PurgedDuplicates,
+
+    AllTopNeighbours = ExtractOrderedRelations(RemovedSameValues, "this.colour", "next.colour"),
 
     // RIGHT NEIGHBOURS
     /* Group Segments by Row Index */
@@ -62,12 +64,9 @@ let
             type table[colour = binary, adj_colour = binary]
         ),
         RemovedLastRow = Table.RemoveLastN(Consecutives,1),
-        AddedCustom1 = Table.AddColumn(RemovedLastRow, "MinColour", each List.Min({[colour], [adj_colour]}), type binary),
-        AddedCustom2 = Table.AddColumn(AddedCustom1, "MaxColour", each List.Max({[colour], [adj_colour]}), type binary),
-        RemovedOtherColumns2 = Table.SelectColumns(AddedCustom2,{"MinColour", "MaxColour"}),
-        RemovedDuplicates = Table.Distinct(RemovedOtherColumns2)
+        OrderedRelations = ExtractOrderedRelations(RemovedLastRow, "colour", "adj_colour")
     in
-        RemovedDuplicates,
+        OrderedRelations,
     #"Added Custom" = Table.AddColumn(#"Grouped Rows", "ProcessedSegments", each ProcessSubtable([Segments]), type table[MinColour = binary, MaxColour = binary]),
     #"Filtered Rows" = Table.SelectRows(#"Added Custom", each not (Table.IsEmpty([ProcessedSegments]))),
     
