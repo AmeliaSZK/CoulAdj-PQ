@@ -48,16 +48,16 @@ let
     AlignedMidAndTopScanlines = Table.FromColumns({List.RemoveLastN(AllScanlines,1), List.RemoveFirstN(AllScanlines,1)}, type table[Mid Scanline = RLEncoded.TableType, Top Scanline = RLEncoded.TableType]),
     /* Merge-sort */
     AddedThisScanline = Table.AddColumn(AlignedMidAndTopScanlines, "This Scanline", each Table.PrefixColumns([Mid Scanline], "This")),
-    AddedNextScanline = Table.AddColumn(AddedThisScanline, "Next Scanline", each Table.PrefixColumns([Top Scanline], "Next")),
-    AddedJoinedMidTop = Table.AddColumn(AddedNextScanline, "Joined MidTop", each Table.Join([This Scanline], "This.Start", [Next Scanline], "Next.Start", JoinKind.FullOuter, JoinAlgorithm.SortMerge)),
-    AddedMidTop = Table.AddColumn(AddedJoinedMidTop, "MidTop", each Table.FillDown([Joined MidTop], {"This.Colour", "Next.Colour"})),
-    AddedTopLeft = Table.AddColumn(AddedMidTop, "TopLeft", each Table.Join([This Scanline], "This.Start", [Next Scanline], "Next.End",   JoinKind.Inner, JoinAlgorithm.SortMerge)),
-    AddedTopRigh = Table.AddColumn(AddedTopLeft, "TopRigh", each Table.Join([This Scanline], "This.End",   [Next Scanline], "Next.Start", JoinKind.Inner, JoinAlgorithm.SortMerge)),
+    AddedNextScanline = Table.AddColumn(AddedThisScanline,         "Next Scanline", each Table.PrefixColumns([Top Scanline], "Next")),
+    AddedJoinedTopCent = Table.AddColumn(AddedNextScanline,  "Joined TopCent", each Table.Join([This Scanline], "This.Start", [Next Scanline], "Next.Start", JoinKind.FullOuter, JoinAlgorithm.SortMerge)),
+    AddedTopLeft =       Table.AddColumn(AddedJoinedTopCent, "TopLeft",        each Table.Join([This Scanline], "This.Start", [Next Scanline], "Next.End",   JoinKind.Inner,     JoinAlgorithm.SortMerge)),
+    AddedTopRigh =       Table.AddColumn(AddedTopLeft,       "TopRigh",        each Table.Join([This Scanline], "This.End",   [Next Scanline], "Next.Start", JoinKind.Inner,     JoinAlgorithm.SortMerge)),
+    AddedTopCent =       Table.AddColumn(AddedTopRigh,       "TopCent",        each Table.FillDown([Joined TopCent], {"This.Colour", "Next.Colour"})),
     AddedAllTops = 
         if DontRelateDiagonals then 
-            Table.AddColumn(AddedTopRigh, "All Tops", each [MidTop])
+            Table.AddColumn(AddedTopCent, "All Tops", each [TopCent])
         else
-            Table.AddColumn(AddedTopRigh, "All Tops", each Table.Combine({[MidTop], [TopLeft], [TopRigh]})),
+            Table.AddColumn(AddedTopCent, "All Tops", each Table.Combine({[TopCent], [TopLeft], [TopRigh]})),
     KeptAllTops = Table.SelectColumns(AddedAllTops,{"All Tops"}),
     ExpandedAllTops = Table.ExpandTableColumn(KeptAllTops, "All Tops", {"This.Colour", "Next.Colour"}),
     FilteredSameColours = Table.SelectRows(ExpandedAllTops, each [This.Colour] <> [Next.Colour]),
@@ -67,13 +67,14 @@ let
             KeptColourColumns = Table.SelectColumns(table, {columnA, columnB}),
             RenamedToKnownNames = Table.RenameColumns(KeptColourColumns,{{columnA, "colour"}, {columnB, "adj_colour"}}),
             AddedMinColour = Table.AddColumn(RenamedToKnownNames, "MinColour", each List.Min({[colour], [adj_colour]}), type binary),
-            AddedMaxColour = Table.AddColumn(AddedMinColour, "MaxColour", each List.Max({[colour], [adj_colour]}), type binary),
+            AddedMaxColour = Table.AddColumn(AddedMinColour,      "MaxColour", each List.Max({[colour], [adj_colour]}), type binary),
             KeptMinMaxColumns = Table.SelectColumns(AddedMaxColour, {"MinColour", "MaxColour"}),
             PurgedDuplicates = Table.Distinct(KeptMinMaxColumns)
         in
             PurgedDuplicates,
 
-    AllTopNeighbours = ExtractOrderedRelations(FilteredSameColours, "This.Colour", "Next.Colour"),
+    ExtractedOrderedTopNeighbours = ExtractOrderedRelations(FilteredSameColours, "This.Colour", "Next.Colour"),
+    AllTopNeighbours = ExtractedOrderedTopNeighbours,
 
     /* To extract the right neighbours, we look at consecutive segments on the same scanline.
     So, for example, say we have this unencoded scanline, where each letter is a pixel of that colour:
@@ -111,7 +112,7 @@ let
     
     /* (Boilerplate) Expand & keep consecutives */
     KeptOrderedConsecutives = Table.SelectColumns(FilteredEmptyOrderedConsecutives,{"OrderedConsecutives"}),
-    ExpandedOrderedConsecutives = Table.ExpandTableColumn(KeptOrderedConsecutives, "OrderedConsecutives", {"MinColour", "MaxColour"}, {"MinColour", "MaxColour"}),
+    ExpandedOrderedConsecutives = Table.ExpandTableColumn(KeptOrderedConsecutives, "OrderedConsecutives", {"MinColour", "MaxColour"}),
     PurgedDuplicateRightNeighbours = Table.Distinct(ExpandedOrderedConsecutives),
     RightNeighbours = PurgedDuplicateRightNeighbours,
 
@@ -126,9 +127,17 @@ let
     AllUniqueRelations = PurgedDuplicateOrderedRelations,
 
     #"~ALL ADJACENCIES~" = "This step is to have a separator in the list of steps in the GUI",
-    AddedAdjacencies = Table.AddColumn(AllUniqueRelations, "Adjacencies", each Table.FromRecords({[colour=[MinColour], adj_colour=[MaxColour]], [colour=[MaxColour], adj_colour=[MinColour]]}), type table[colour=binary, adj_colour=binary]),
+    AddedAdjacencies = Table.AddColumn(
+        AllUniqueRelations, 
+        "Adjacencies", 
+        each Table.FromRecords({
+            [colour=[MinColour], adj_colour=[MaxColour]], 
+            [colour=[MaxColour], adj_colour=[MinColour]]
+        }), 
+        type table[colour=binary, adj_colour=binary]
+    ),
     KeptAdjacencies = Table.SelectColumns(AddedAdjacencies,{"Adjacencies"}),
-    ExpandedAdjacencies = Table.ExpandTableColumn(KeptAdjacencies, "Adjacencies", {"colour", "adj_colour"}, {"colour", "adj_colour"}),
+    ExpandedAdjacencies = Table.ExpandTableColumn(KeptAdjacencies, "Adjacencies", {"colour", "adj_colour"}),
     AllAdjacencies = ExpandedAdjacencies,
 
     #"~FORMATTED OUTPUT~" = "This step is to have a separator in the list of steps in the GUI",
@@ -162,7 +171,7 @@ let
     if ParsedBitmap[HasAlpha] then
         {"r", "g", "b", "a", "adj_r", "adj_g", "adj_b", "adj_a"}
     else
-        {"r", "g", "b", "adj_r", "adj_g", "adj_b"},
+        {"r", "g", "b",      "adj_r", "adj_g", "adj_b"},
 
     RecordFromColour = ParsedBitmap[RecordFromColour],
     RecordFromColour.RecordType = ParsedBitmap[RecordFromColour.RecordType],
@@ -171,11 +180,11 @@ let
     ColumnNames = FieldNames,
     AdjColumnNames = List.Transform(ColumnNames, each "adj_" & _),
 
-    AddedDecoded = Table.AddColumn(AllAdjacencies, "decoded", each RecordFromColour([colour]), RecordFromColour.RecordType),
-    AddedAdjDecoded = Table.AddColumn(AddedDecoded, "adj_decoded", each RecordFromColour([adj_colour]), RecordFromColour.RecordType),
+    AddedDecoded =    Table.AddColumn(AllAdjacencies,     "decoded", each RecordFromColour(    [colour]), RecordFromColour.RecordType),
+    AddedAdjDecoded = Table.AddColumn(AddedDecoded,   "adj_decoded", each RecordFromColour([adj_colour]), RecordFromColour.RecordType),
     KeptDecodedColumns = Table.SelectColumns(AddedAdjDecoded,{"decoded", "adj_decoded"}),
-    ExpandedDecoded = Table.ExpandRecordColumn(KeptDecodedColumns, "decoded", FieldNames, ColumnNames),
-    ExpandedAdjDecoded = Table.ExpandRecordColumn(ExpandedDecoded, "adj_decoded", FieldNames, AdjColumnNames),
+    ExpandedDecoded =    Table.ExpandRecordColumn(KeptDecodedColumns,     "decoded", FieldNames,    ColumnNames),
+    ExpandedAdjDecoded = Table.ExpandRecordColumn(ExpandedDecoded,    "adj_decoded", FieldNames, AdjColumnNames),
     RenamedColumnsPerCoulAdjAPI = Table.RenameColumns(ExpandedAdjDecoded, ColumnRenames),
     ReorderedColumnsPerCoulAdjAPI = Table.ReorderColumns(RenamedColumnsPerCoulAdjAPI, ColumnOrder),
     FormattedOutput = ReorderedColumnsPerCoulAdjAPI 
