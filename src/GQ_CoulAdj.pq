@@ -155,11 +155,11 @@ let
         This: A A B B B B C C D
     */
     #"~ALL TOP NEIGHBOURS~" = "This step is to have a separator in the list of steps in the GUI",
-    /* Align consecutive rows */
+
     GroupedScanlines = Table.Group(RLEncoded, {"Scanline Index"}, {{"Scanlines", each _, RLEncoded.TableType}}, GroupKind.Local),
     AllScanlines = Table.Column(GroupedScanlines, "Scanlines"),
     AlignedMidAndTopScanlines = Table.FromColumns({List.RemoveLastN(AllScanlines,1), List.RemoveFirstN(AllScanlines,1)}, type table[Mid Scanline = RLEncoded.TableType, Top Scanline = RLEncoded.TableType]),
-    /* Merge-sort */
+
     AddedThisScanline = Table.AddColumn(AlignedMidAndTopScanlines, "This Scanline", each Table.PrefixColumns([Mid Scanline], "This")),
     AddedNextScanline = Table.AddColumn(AddedThisScanline,         "Next Scanline", each Table.PrefixColumns([Top Scanline], "Next")),
     AddedJoinedTopCent = Table.AddColumn(AddedNextScanline,  "Joined TopCent", each Table.Join([This Scanline], "This.Start", [Next Scanline], "Next.Start", JoinKind.FullOuter, JoinAlgorithm.SortMerge)),
@@ -218,11 +218,10 @@ let
     AddedSegmentsAsList = Table.AddColumn(GroupedSegments, "Segments.AsList", each Table.Column([Segments], "Colour"), type {binary}),
     AddedConsecutives = Table.AddColumn(AddedSegmentsAsList, "Consecutives", each Table.FromColumns({List.RemoveLastN([Segments.AsList],1), List.RemoveFirstN([Segments.AsList],1)}, type table[colour = binary, adj_colour = binary]), type table[colour = binary, adj_colour = binary]),
     AddedOrderedConsecutives = Table.AddColumn(AddedConsecutives, "OrderedConsecutives", each ExtractOrderedRelations([Consecutives], "colour", "adj_colour"), type table[MinColour = binary, MaxColour = binary]),
-    // This is necessary because if all the pixels in a scanline are the same colour, its subtable will be empty,
-    // and this will create errors later on. This case is present in the Total War Warhammer 2 Vortex map.
+    // This is necessary because if all the pixels in a scanline are the same colour, the subtable will be empty,
+    // and this will create errors later on. This happens in the Total War Warhammer 2 Vortex map.
     FilteredEmptyOrderedConsecutives = Table.SelectRows(AddedOrderedConsecutives, each not (Table.IsEmpty([OrderedConsecutives]))),
-    
-    /* Expand & keep consecutives */
+
     KeptOrderedConsecutives = Table.SelectColumns(FilteredEmptyOrderedConsecutives,{"OrderedConsecutives"}),
     ExpandedOrderedConsecutives = Table.ExpandTableColumn(KeptOrderedConsecutives, "OrderedConsecutives", {"MinColour", "MaxColour"}),
     PurgedDuplicateRightNeighbours = Table.Distinct(ExpandedOrderedConsecutives),
