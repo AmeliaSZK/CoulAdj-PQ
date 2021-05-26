@@ -234,3 +234,52 @@ time on documentation right now...)
 | Formatted Output     | 1:34 | 0:06 |
 
 
+# Merge-sort
+These attempts were started several weeks after the previous.
+
+## Baseline
+1:35 with Mortal Empires, before the merge-sort.
+All measurements are done with Mortal Empires in the Merge-sort section.
+
+## First correct implementation
+1:19
+
+Not complete, because we don't use merge-sort for the segments on the same scanline.
+Also, the way diagonals are handled is not ideal, and may be suffering in 
+performance because it isn't properly buffered.
+
+
+## Buffered subtables
+1:18
+
+Not significant imo
+
+## Same as above, but a day later
+1:27
+
+Welp, looks like we have a lot of variability lol
+
+## Removed buffering of subtables
+1:18
+
+These results are really confusing lol.
+
+## Added intermediary purge of duplicates in RightNeighbours
+1:13
+
+## Restored support for DontRelateDiagonals
+1:17
+
+## Different way of supporting DontRelateDiagonals
+1:23
+
+## Same code, but I was away from my computer for 3 hours
+1:18
+
+## Combined into one query
+0:30
+
+Yes, thirty seconds lol. No, I can't explain why lol. 
+Maybe the separate queries were generating caches?
+
+
