@@ -90,6 +90,71 @@ let
     RLEncoded = Table.Buffer(RLEncoded.Unbuffered.Renamed),
     RLEncoded.TableType = type table[Scanline Index = number, Colour = binary, Start = number, End = number],
 
+    /* How the top neighbours are computed:
+    TopLeft, TopCent, and TopRigh are in the same section of the code because of how similar they are to compute.
+    TopLeft and TopRigh may be ignored if the DontRelateDiagonals option is set to True.
+
+    For performance, computations are done with merge-sort joins, and most notably a 
+        full outer merge-sort join for TopCent.
+    The joins are performed between pairs of consecutive scanlines.
+    For example, say we have these two (unencoded) scanlines of pixels:
+        (Col Index)  : 0       4       8 9
+        Next Scanline: E E E E F F F F G
+        This Scanline: A A B B B B C C D
+        (Col Index)  : 0   2       6   8 9
+    After the Run Length Encoding, we can get these 2 subtables(*):
+        [This Scanline]                         ~   [Next Scanline]
+        [This.Colour] [This.Start] [This.End]   ~   [Next.Colour] [Next.Start] [Next.End]
+        A             0            2            ~   E             0            4
+        B             2            6            ~   F             4            8
+        C             6            8            ~   G             8            9
+        D             8            9            ~
+        
+        (*): A "subtable" is a Power Query table contained within a cell of another Power Query table.
+             So for the two subtables above, the "table" has the two columns [This Scanline] and [Next Scanline].
+             Then, the two shown subtables are contained in the cells of the first row of the "table".
+             The representation in this comment is a bit funky because I tried to only show what's relevant.
+
+    For the diagonal neighbours, (TopLeft and TopRigh), look at the last 2 columns in the example:
+        (Col Index)  :      8 9
+        Next Scanline:    F G
+        This Scanline:    C D
+        (Col Index)  :      8 9
+    We can see that...
+        For D, TopLeft is F
+        For C, TopRigh is G
+    We can find all the TopLeft neighbours by joining with This.Start and Next.End
+        For D, This.Start is 8. For F, Next.End   is also 8.
+    We can find all the TopRigh neighbours by joining with This.End   and Next.Start
+        For C, This.End   is 8. For G, Next.Start is also 8.
+
+    For the TopCent neighbours, a full outer merge-sort join on This.Start and Next.Start,
+        followed by a fill-down, will find all segments that overlap.
+    The join:
+        [This.Colour] [This.Start] [This.End] [Next.Colour] [Next.Start] [Next.End]
+        A             0            2          E             0            4
+        B             2            6          null          null         null
+        null          null         null       F             4            8
+        C             6            8          null          null         null
+        D             8            9          G             8            9   
+    The fill-down:
+        [This.Colour] [This.Start] [This.End] [Next.Colour] [Next.Start] [Next.End]
+        A             0            2          E             0            4
+        B             2            6          E             0            4
+        B             2            6          F             4            8
+        C             6            8          F             4            8
+        D             8            9          G             8            9    
+    Just the colour columns (others were removed):     
+        [This.Colour] [Next.Colour]
+        A             E
+        B             E
+        B             F
+        C             F
+        D             G
+    Copy-pasta of the example for comparison:
+        Next: E E E E F F F F G
+        This: A A B B B B C C D
+    */
     #"~ALL TOP NEIGHBOURS~" = "This step is to have a separator in the list of steps in the GUI",
     /* Align consecutive rows */
     GroupedScanlines = Table.Group(RLEncoded, {"Scanline Index"}, {{"Scanlines", each _, RLEncoded.TableType}}, GroupKind.Local),
