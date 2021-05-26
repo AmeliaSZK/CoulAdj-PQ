@@ -276,4 +276,10 @@ These results are really confusing lol.
 ## Same code, but I was away from my computer for 3 hours
 1:18
 
+## Combined into one query
+0:30
+
+Yes, thirty seconds lol. No, I can't explain why lol. 
+Maybe the separate queries were generating caches?
+
 
