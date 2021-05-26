@@ -1,4 +1,9 @@
 let
+    CoulAdj = (bitmap as binary, optional dontRelateDiagonals as logical) =>
+let
+    DontRelateDiagonals = if dontRelateDiagonals is null then false else dontRelateDiagonals,
+
+
     /* IMPORTANT VOCABULARY
 
     # Run Length Encoding (RLE) #
@@ -70,13 +75,6 @@ let
     Since {A,B} always imply that {B,A} is also true, we can (and do!) 
         remove {B,A} from intermediary datasets to improve performances.
     */
-
-    // Parameters
-    bitmap = GQ_ImageUnderTest_Binary,
-    dontRelateDiagonals = GQ_DontRelateDiagonals,
-
-    DontRelateDiagonals = if dontRelateDiagonals is null then false else dontRelateDiagonals,
-    
     ParsedBitmap = GQ_ParseBitmap(bitmap),
     RLEncoded.Unbuffered = Table.Group(
             ParsedBitmap[PixelArray.AsColours], 
@@ -301,3 +299,5 @@ let
     FormattedOutput = ReorderedColumnsPerCoulAdjAPI 
 in
     FormattedOutput
+in
+    CoulAdj

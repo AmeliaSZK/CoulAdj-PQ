@@ -1,6 +1,6 @@
 let
     GoldenResults = GQ_ImageUnderTest_Golden,
-    ActualResults = GQ_CoulAdj,
+    ActualResults = GQ_TB_CoulAdj,
     #"Sorted Rows" = Table.Sort(ActualResults,{{"r", Order.Ascending}, {"g", Order.Ascending}, {"b", Order.Ascending}, {"a", Order.Ascending}, {"adj_r", Order.Ascending}, {"adj_g", Order.Ascending}, {"adj_b", Order.Ascending}, {"adj_a", Order.Ascending}}),
     Table1_AsRecords = Table.ToRecords(GoldenResults),
     Table2_AsRecords = Table.ToRecords(#"Sorted Rows"),
