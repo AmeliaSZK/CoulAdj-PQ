@@ -1,4 +1,26 @@
 let
+    Documentation = type function(
+        bitmap as (type binary meta [
+            Documentation.FieldCaption = "Bitmap Image File"
+        ]),
+        optional dontRelateDiagonals as (type logical meta [
+            Documentation.FieldCaption = "Don't Relate Diagonals",
+            Documentation.AllowedValues = { false, true }
+        ])
+    ) as record meta [
+        Documentation.Name = "GQ_CoulAdj",
+        Documentation.LongDescription = "Start the description with an action verb and a 1-sentence description of what the function does. ",
+        Documentation.Examples = {[
+            Description = "(Extract the pixel array?)",
+            Code = "GQ_FunctionTemplate(""Amélia"")",
+            Result = """Hello Amélia"""
+        ],[
+            Description = "(Convert colours to RGB?)",
+            Code = "GQ_FunctionTemplate()",
+            Result = """Hello"""
+        ]}
+    ],
+
     CoulAdj = (bitmap as binary, optional dontRelateDiagonals as logical) =>
 let
     DontRelateDiagonals = if dontRelateDiagonals is null then false else dontRelateDiagonals,
@@ -298,6 +320,8 @@ let
     ReorderedColumnsPerCoulAdjAPI = Table.ReorderColumns(RenamedColumnsPerCoulAdjAPI, ColumnOrder),
     FormattedOutput = ReorderedColumnsPerCoulAdjAPI 
 in
-    FormattedOutput
+    FormattedOutput,
+
+    DocumentedCall = Value.ReplaceType(CoulAdj, Documentation)
 in
-    CoulAdj
+    DocumentedCall
