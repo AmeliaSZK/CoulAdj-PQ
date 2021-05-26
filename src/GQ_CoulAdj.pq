@@ -80,11 +80,11 @@ let
     ParsedBitmap = GQ_ParseBitmap(bitmap),
     RLEncoded.Unbuffered = Table.Group(
             ParsedBitmap[PixelArray.AsColours], 
-            {"row", "colour"}, 
-            {{"Start", each List.First([col]), type number}, {"End", each List.Last([col])+1, type number}}, 
+            {"Row Index", "Colour"}, 
+            {{"Start", each List.First([Column Index]), type number}, {"End", each List.Last([Column Index])+1, type number}}, 
             GroupKind.Local
         ),
-    RLEncoded.Unbuffered.Renamed = Table.RenameColumns(RLEncoded.Unbuffered,{{"row", "Scanline Index"}, {"colour", "Colour"}}),
+    RLEncoded.Unbuffered.Renamed = Table.RenameColumns(RLEncoded.Unbuffered,{{"Row Index", "Scanline Index"}}),
     // Every time I tried to remove this buffer, the duration exploded. Leave it there.
     RLEncoded = Table.Buffer(RLEncoded.Unbuffered.Renamed),
     RLEncoded.TableType = type table[Scanline Index = number, Colour = binary, Start = number, End = number],

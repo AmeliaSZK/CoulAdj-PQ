@@ -300,7 +300,7 @@ let
 
     /* As Table */
     AllPixels = Table.FromColumns({AllRowIndices, AllColIndices, PixelValues}, 
-        type table[row = number, col = number, colour = binary]),
+        type table[Row Index = number, Column Index = number, Colour = binary]),
     
     AsRecord = 
     [
