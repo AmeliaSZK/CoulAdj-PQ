@@ -69,7 +69,6 @@ let
 
     Since {A,B} always imply that {B,A} is also true, we can (and do!) 
         remove {B,A} from intermediary datasets to improve performances.
-
     */
 
     // Parameters
@@ -214,7 +213,6 @@ let
         A-D
     */
     #"~RIGHT NEIGHBOURS~" = "This step is to have a separator in the list of steps in the GUI",
-    /* Group Segments by Row Index */
     KeptRowAndColourFromRLE = Table.SelectColumns(RLEncoded,{"Scanline Index", "Colour"}),
     GroupedSegments = Table.Group(KeptRowAndColourFromRLE, {"Scanline Index"}, {{"Segments", each _, type table [Scanline Index = number, Colour = binary]}}, GroupKind.Local),
     AddedSegmentsAsList = Table.AddColumn(GroupedSegments, "Segments.AsList", each Table.Column([Segments], "Colour"), type {binary}),
@@ -224,7 +222,7 @@ let
     // and this will create errors later on. This case is present in the Total War Warhammer 2 Vortex map.
     FilteredEmptyOrderedConsecutives = Table.SelectRows(AddedOrderedConsecutives, each not (Table.IsEmpty([OrderedConsecutives]))),
     
-    /* (Boilerplate) Expand & keep consecutives */
+    /* Expand & keep consecutives */
     KeptOrderedConsecutives = Table.SelectColumns(FilteredEmptyOrderedConsecutives,{"OrderedConsecutives"}),
     ExpandedOrderedConsecutives = Table.ExpandTableColumn(KeptOrderedConsecutives, "OrderedConsecutives", {"MinColour", "MaxColour"}),
     PurgedDuplicateRightNeighbours = Table.Distinct(ExpandedOrderedConsecutives),
