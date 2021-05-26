@@ -282,4 +282,9 @@ These results are really confusing lol.
 Yes, thirty seconds lol. No, I can't explain why lol. 
 Maybe the separate queries were generating caches?
 
+## Final test before converting to a function, after 2nd clean-up
+0:26 Mortal Empires
+0:24 Vortex
+
+Both had the correct results
 
