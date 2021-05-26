@@ -1,32 +1,81 @@
 let
     /* IMPORTANT VOCABULARY
+
+    # Run Length Encoding (RLE) #
+    | Symbol         | Meaning                                                                |
+    |----------------|------------------------------------------------------------------------|
+    | Scanline       | A row of pixels                                                        |
+    | Segment        | A run of consecutive pixels of the same colour on the same scanline(1) |
+    | Index          | An index where the first item in the list is at index 0                |
+    | Start (In RLE) | Index                 of the first pixel in this segment               |
+    | End   (In RLE) | Index AFTER the index of the last  pixel in this segment(2)            |
+
+    (1): I know that the technical term for this is a "run", as it is the "run" in "run length encoding",
+         but I feel that "run" is too close to "row", and the goal of establishing this vocabulary is
+         to have words for different things that: 1) *are* different, and that 2) **look** different.
+
+    **************************************************************************************
+    ******** MOST IMPORTANT INFORMATION IN THIS WHOLE COMMENT ****************************
+
+    (2): It is crucial to remember that the "End" of a segment is *not* `last index`,
+         but `last index + 1`. It is how we can identify segments on different scanlines 
+         that don't overlap, but are diagonally adjacent.
+
+    ******** MOST IMPORTANT INFORMATION IN THIS WHOLE COMMENT ****************************
+    **************************************************************************************
+
+
+
+    # Positionality #
+    |     |    Left |    Cent |    Righ |
+    |-----|---------|---------|---------|
+    | Top | TopLeft | TopCent | TopRigh |
+    | Mid | MidLeft | MidCent | MidRigh |
+    | Bot | BotLeft | BotCent | BotRigh |
+
+        ## A note about "This" and "Next" ##
+        It is rarely (never?) important to know if the next row of data in a Power Query table
+        is actually to the top or to the bottom of the previous row. Also, depending on how a
+        bitmap has been stored in its file, the next row could be either top or bottom.
+
+        This is why we used "This" and "Next" in several names, because what's important is that
+        we're comparing "this" row with the "next" row, wether that's top or bottom, or right or left.
+
+        However, while coding and choosing the variable and column names, we realized that positional
+        terminology was necessary to tell us quickly what the variable was intended to be.
+
+        For example, when finding the diagonal neighbours. We want TopLeft and TopRigh. But how do we name
+        those with "This" and "Next"? DiagThisStartNextEnd?? (TopLeft) And then DiagThisEndNextStart??? (TopRigh)
+        DiagThisStartNextEnd and DiagThisEndNextStart look to me like undistinguishable gibberish at first glance,
+        and just gibberish at second glance.
+
+        Also, if you're getting confused as to why some places use This/Next and others use positionality,
+        it's not you, it's me who never managed to establish a consistent convention for which situation deserves which term.
+        Towards the end of this implementation, I spent a good amount of time renaming variables and columns 
+        to use terminology in ways that at least *feel* consistent, but... yeah :|
+
+
+
+    # Relations & Adjacencies #
     | Symbol              | Meaning                            |
     |---------------------|------------------------------------|
     | A                   | The colour "A"                     |
     | {B,A}               | "Colour B is adjacent to colour A" |
     | An adjacency        | {B,A}                              |
-    | Two adjacencies     | {B, A}, {C, D}                     |
-    | Two adjacencies     | {A, B}, {B, A}                     |
+    | Two adjacencies     | {B,A}, {C,D}                       |
+    | Two adjacencies     | {A,B}, {B,A}                       |
     | A relation          | { {A,B}, {B,A} }                   |
-    | An ordered relation | {A, B}                             |
-    Since {A,B} always imply that {B,A} is also true, we can remove {B,A} from
-        the dataset to improve performances.
-    However, we will still need to re-introduce {B,A} later so that the output has both.
+    | An ordered relation | {A,B}                              |
 
-    | Symbol   | Meaning                                                                |
-    |----------|------------------------------------------------------------------------|
-    | Scanline | A row of pixels                                                        |
-    | Segment  | A run of consecutive pixels of the same colour on the same scanline(1) |
-    | Index    | An index where the first item in the list is at index 0                |
+    Since {A,B} always imply that {B,A} is also true, we can (and do!) 
+        remove {B,A} from intermediary datasets to improve performances.
 
-    (1): I know that the technical term for this is a "run", as it is the "run" in "run length encoding",
-         but I feel that "run" is too close to "row", and the goal of establishing this vocabulary is
-         to have words for different things that: 1) *are* different, and that 2) **look** different.
-    
     */
+
     // Parameters
     bitmap = GQ_ImageUnderTest_Binary,
     dontRelateDiagonals = GQ_DontRelateDiagonals,
+
     DontRelateDiagonals = if dontRelateDiagonals is null then false else dontRelateDiagonals,
     
     ParsedBitmap = GQ_ParseBitmap(bitmap),
