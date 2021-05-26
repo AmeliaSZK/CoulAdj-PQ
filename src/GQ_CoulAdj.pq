@@ -14,7 +14,7 @@ let
     // Every time I tried to remove this buffer, the duration exploded. Leave it there.
     RLEncoded = Table.Buffer(RLEncoded.Unbuffered),
 
-    // ALL TOP NEIGHBOURS
+    #"~ALL TOP NEIGHBOURS~" = "This step is to have a separator in the list of steps in the GUI",
     /* Align consecutive rows */
     GroupedByRowIndex = Table.Group(RLEncoded, {"row"}, {{"Rows", each _, type table [row = number, colour = binary, Start = number, End = number]}}, GroupKind.Local),
     AllRows = Table.Column(GroupedByRowIndex, "Rows"),
@@ -50,10 +50,10 @@ let
 
     AllTopNeighbours = ExtractOrderedRelations(RemovedSameValues, "this.colour", "next.colour"),
 
-    // RIGHT NEIGHBOURS
+    #"~RIGHT NEIGHBOURS~" = "This step is to have a separator in the list of steps in the GUI",
     /* Group Segments by Row Index */
-    #"Removed Other Columns2" = Table.SelectColumns(RLEncoded,{"row", "colour"}),
-    #"Grouped Rows" = Table.Group(#"Removed Other Columns2", {"row"}, {{"Segments", each _, type table [row = number, colour = binary]}}, GroupKind.Local),
+    KeptRowAndColourFromRLE = Table.SelectColumns(RLEncoded,{"row", "colour"}),
+    GroupedSegments = Table.Group(KeptRowAndColourFromRLE, {"row"}, {{"Segments", each _, type table [row = number, colour = binary]}}, GroupKind.Local),
 
     /* Join consecutive segments */
     ProcessSubtable = (table as table) as table =>
@@ -67,7 +67,7 @@ let
         OrderedRelations = ExtractOrderedRelations(RemovedLastRow, "colour", "adj_colour")
     in
         OrderedRelations,
-    #"Added Custom" = Table.AddColumn(#"Grouped Rows", "ProcessedSegments", each ProcessSubtable([Segments]), type table[MinColour = binary, MaxColour = binary]),
+    #"Added Custom" = Table.AddColumn(GroupedSegments, "ProcessedSegments", each ProcessSubtable([Segments]), type table[MinColour = binary, MaxColour = binary]),
     #"Filtered Rows" = Table.SelectRows(#"Added Custom", each not (Table.IsEmpty([ProcessedSegments]))),
     
     /* (Boilerplate) Expand & keep consecutives */
@@ -76,7 +76,7 @@ let
     #"Removed Duplicates1" = Table.Distinct(#"Expanded {0}"),
     RightNeighbours = #"Removed Duplicates1",
 
-    // ALL UNIQUE RELATIONS
+    #"~ALL UNIQUE RELATIONS~" = "This step is to have a separator in the list of steps in the GUI",
     /* Combine all unique ordered relations */
     // unique = no duplicates
     // ordered = value1 < value2, for all rows
@@ -86,13 +86,13 @@ let
     PurgedDuplicates = Table.Distinct(CombinedAllOrderedRelations),
     AllUniqueRelations = PurgedDuplicates,
 
-    // ALL ADJACENCIES
+    #"~ALL ADJACENCIES~" = "This step is to have a separator in the list of steps in the GUI",
     AddedAdjacencies = Table.AddColumn(AllUniqueRelations, "Adjacencies", each Table.FromRecords({[colour=[MinColour], adj_colour=[MaxColour]], [colour=[MaxColour], adj_colour=[MinColour]]}), type table[colour=binary, adj_colour=binary]),
     KeptAdjacencies = Table.SelectColumns(AddedAdjacencies,{"Adjacencies"}),
     ExpandedAdjacencies = Table.ExpandTableColumn(KeptAdjacencies, "Adjacencies", {"colour", "adj_colour"}, {"colour", "adj_colour"}),
     AllAdjacencies = ExpandedAdjacencies,
 
-    // FORMATTED OUTPUT
+    #"~FORMATTED OUTPUT~" = "This step is to have a separator in the list of steps in the GUI",
     // The CoulAdj API specifies the column names and the order in which they appear, and these names
     //    are different from what ParseBitmap returns.
     ColumnRenames =
