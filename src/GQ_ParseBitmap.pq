@@ -256,31 +256,44 @@ let
 
 
     /* Conversion To Record */
-    // I tried to make RecordFromColour reorder the fields to RGB(A),
-    //    but it showed a consistent & noticeable performance cost in tests.
-    //    (From 1m35s to 1m41s.)
-    RecordFromColour = 
-        if BitsPerPixel = 24 then
-            RGBTRIPLE
-        else if BitsPerPixel = 32 then
-            RGBQUAD
-        else
-            error ErrorMessage.BitsPerPixel,
-    RecordFromColour.RecordType =
-        if BitsPerPixel = 24 then
-            RGB.Type
-        else if BitsPerPixel = 32 then
-            RgbAlpha.Type
-        else
-            error ErrorMessage.BitsPerPixel,
+    ConversionBundle.RGB      = [Function   = RGBTRIPLE, RecordType = RGB.Type],
+    ConversionBundle.RgbAlpha = [Function   = RGBQUAD,   RecordType = RgbAlpha.Type],
 
-    // Yes, the order is BGR(A) per bitmap specs
+    // Yes, the order is BGR(A) per bitmap specs. 
+    //    See reference links for RGBQUAD and RGBTRIPLE that are in a comment higher up in this code
     RGB.Type      = type [Blue = number, Green = number, Red = number],
     RgbAlpha.Type = type [Blue = number, Green = number, Red = number, Alpha = number],
 
+    ConversionBundle = 
+    if Compression = BI_RGB then
+        if BitsPerPixel = 24 then
+            ConversionBundle.RGB
+        else if BitsPerPixel = 32 then
+            ConversionBundle.RgbAlpha
+        else
+            error ErrorMessage.BitsPerPixel
+    else if Compression = BI_BITFIELDS and BitFieldsDontMatter and BitsPerPixel = 32 then
+        // The website that converted my test samples from PNG to BMP used BI_BITFIELDS to
+        // specify the exact same order as BI_RGB, omg... -_-
+        ConversionBundle.RgbAlpha
+    else
+        error ErrorMessage.Compression,
+
+    BitFieldsDontMatter = 
+            ImageHeader[BlueMask]  = 0x000000FF
+        and ImageHeader[GreenMask] = 0x0000FF00
+        and ImageHeader[RedMask]   = 0x00FF0000
+        and ImageHeader[AlphaMask] = 0xFF000000,
+
+    // I tried to make RecordFromColour reorder the fields to RGB(A),
+    //    but it showed a consistent & noticeable performance cost in tests.
+    //    (From 1m35s to 1m41s.)
+    RecordFromColour = ConversionBundle[Function],
+    RecordFromColour.RecordType = ConversionBundle[RecordType],
+
     /* Error messages */
     // These were rescued from removed code
-    ErrorMessage.Compression = "Image uses an unsupported compression method. Only uncompressed images are supported.",
+    ErrorMessage.Compression = "Image uses an unsupported compression method. Only uncompressed (BI_RGB) images are supported.",
     ErrorMessage.BitsPerPixel = 
         "Image has " & Number.ToText(BitsPerPixel) & " bits per pixel, and only 24 and 32 bits per pixel are supported.",
     
