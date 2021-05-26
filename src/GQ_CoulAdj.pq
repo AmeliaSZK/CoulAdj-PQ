@@ -5,7 +5,12 @@ let
     DontRelateDiagonals = if dontRelateDiagonals is null then false else dontRelateDiagonals,
     
     ParsedBitmap = GQ_ParseBitmap(bitmap),
-    RLEncoded.Unbuffered = GQ_EncodeRunLength(ParsedBitmap[PixelArray.AsColours]),
+    RLEncoded.Unbuffered = Table.Group(
+            ParsedBitmap[PixelArray.AsColours], 
+            {"row", "colour"}, 
+            {{"Start", each List.First([col]), type number}, {"End", each List.Last([col])+1, type number}}, 
+            GroupKind.Local
+        ),
     // Every time I tried to remove this buffer, the duration exploded. Leave it there.
     RLEncoded = Table.Buffer(RLEncoded.Unbuffered),
 
