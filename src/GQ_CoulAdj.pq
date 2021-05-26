@@ -1,4 +1,29 @@
 let
+    /* IMPORTANT VOCABULARY
+    | Symbol              | Meaning                            |
+    |---------------------|------------------------------------|
+    | A                   | The colour "A"                     |
+    | {B,A}               | "Colour B is adjacent to colour A" |
+    | An adjacency        | {B,A}                              |
+    | Two adjacencies     | {B, A}, {C, D}                     |
+    | Two adjacencies     | {A, B}, {B, A}                     |
+    | A relation          | { {A,B}, {B,A} }                   |
+    | An ordered relation | {A, B}                             |
+    Since {A,B} always imply that {B,A} is also true, we can remove {B,A} from
+        the dataset to improve performances.
+    However, we will still need to re-introduce {B,A} later so that the output has both.
+
+    | Symbol   | Meaning                                                                |
+    |----------|------------------------------------------------------------------------|
+    | Scanline | A row of pixels                                                        |
+    | Segment  | A run of consecutive pixels of the same colour on the same scanline(1) |
+    | Index    | An index where the first item in the list is at index 0                |
+
+    (1): I know that the technical term for this is a "run", as it is the "run" in "run length encoding",
+         but I feel that "run" is too close to "row", and the goal of establishing this vocabulary is
+         to have words for different things that: 1) *are* different, and that 2) **look** different.
+    
+    */
     // Parameters
     bitmap = GQ_ImageUnderTest_Binary,
     dontRelateDiagonals = GQ_DontRelateDiagonals,
@@ -11,31 +36,31 @@ let
             {{"Start", each List.First([col]), type number}, {"End", each List.Last([col])+1, type number}}, 
             GroupKind.Local
         ),
+    RLEncoded.Unbuffered.Renamed = Table.RenameColumns(RLEncoded.Unbuffered,{{"row", "Scanline Index"}, {"colour", "Colour"}}),
     // Every time I tried to remove this buffer, the duration exploded. Leave it there.
-    RLEncoded = Table.Buffer(RLEncoded.Unbuffered),
+    RLEncoded = Table.Buffer(RLEncoded.Unbuffered.Renamed),
+    RLEncoded.TableType = type table[Scanline Index = number, Colour = binary, Start = number, End = number],
 
     #"~ALL TOP NEIGHBOURS~" = "This step is to have a separator in the list of steps in the GUI",
     /* Align consecutive rows */
-    GroupedByRowIndex = Table.Group(RLEncoded, {"row"}, {{"Rows", each _, type table [row = number, colour = binary, Start = number, End = number]}}, GroupKind.Local),
-    AllRows = Table.Column(GroupedByRowIndex, "Rows"),
-    AlignedTopRow = Table.FromColumns({AllRows, List.Skip(AllRows)}, {"bottom", "Top"}),
-    RemovedLastRow = Table.RemoveLastN(AlignedTopRow,1),
-
+    GroupedScanlines = Table.Group(RLEncoded, {"Scanline Index"}, {{"Scanlines", each _, RLEncoded.TableType}}, GroupKind.Local),
+    AllScanlines = Table.Column(GroupedScanlines, "Scanlines"),
+    AlignedMidAndTopScanlines = Table.FromColumns({List.RemoveLastN(AllScanlines,1), List.RemoveFirstN(AllScanlines,1)}, type table[Mid Scanline = RLEncoded.TableType, Top Scanline = RLEncoded.TableType]),
     /* Merge-sort */
-    AddedThisScanline = Table.AddColumn(RemovedLastRow, "thisScanline", each Table.PrefixColumns([bottom], "this")),
-    AddedNextScanline = Table.AddColumn(AddedThisScanline, "nextScanline", each Table.PrefixColumns([Top], "next")),
-    AddedJoined = Table.AddColumn(AddedNextScanline, "Joined", each Table.Join([thisScanline], "this.Start", [nextScanline], "next.Start", JoinKind.FullOuter, JoinAlgorithm.SortMerge)),
-    AddedJoinedDiagStartEnd = Table.AddColumn(AddedJoined, "JoinedDiagStartEnd", each Table.Join([thisScanline], "this.Start", [nextScanline], "next.End",   JoinKind.Inner, JoinAlgorithm.SortMerge)),
-    AddedJoinedDiagEndStart = Table.AddColumn(AddedJoinedDiagStartEnd, "JoinedDiagEndStart", each Table.Join([thisScanline], "this.End",   [nextScanline], "next.Start", JoinKind.Inner, JoinAlgorithm.SortMerge)),
-    AddedFilled = Table.AddColumn(AddedJoinedDiagEndStart, "Filled", each Table.FillDown([Joined], {"this.colour", "next.colour"})),
-    AddedCombined = 
+    AddedThisScanline = Table.AddColumn(AlignedMidAndTopScanlines, "This Scanline", each Table.PrefixColumns([Mid Scanline], "This")),
+    AddedNextScanline = Table.AddColumn(AddedThisScanline, "Next Scanline", each Table.PrefixColumns([Top Scanline], "Next")),
+    AddedJoinedMidTop = Table.AddColumn(AddedNextScanline, "Joined MidTop", each Table.Join([This Scanline], "This.Start", [Next Scanline], "Next.Start", JoinKind.FullOuter, JoinAlgorithm.SortMerge)),
+    AddedMidTop = Table.AddColumn(AddedJoinedMidTop, "MidTop", each Table.FillDown([Joined MidTop], {"This.Colour", "Next.Colour"})),
+    AddedTopLeft = Table.AddColumn(AddedMidTop, "TopLeft", each Table.Join([This Scanline], "This.Start", [Next Scanline], "Next.End",   JoinKind.Inner, JoinAlgorithm.SortMerge)),
+    AddedTopRigh = Table.AddColumn(AddedTopLeft, "TopRigh", each Table.Join([This Scanline], "This.End",   [Next Scanline], "Next.Start", JoinKind.Inner, JoinAlgorithm.SortMerge)),
+    AddedAllTops = 
         if DontRelateDiagonals then 
-            Table.AddColumn(AddedFilled, "Combined", each [Filled])
+            Table.AddColumn(AddedTopRigh, "All Tops", each [MidTop])
         else
-            Table.AddColumn(AddedFilled, "Combined", each Table.Combine({[Filled], [JoinedDiagStartEnd], [JoinedDiagEndStart]})),
-    KeptCombined = Table.SelectColumns(AddedCombined,{"Combined"}),
-    ExpandedCombined = Table.ExpandTableColumn(KeptCombined, "Combined", {"this.colour", "next.colour"}, {"this.colour", "next.colour"}),
-    RemovedSameValues = Table.SelectRows(ExpandedCombined, each [this.colour] <> [next.colour]),
+            Table.AddColumn(AddedTopRigh, "All Tops", each Table.Combine({[MidTop], [TopLeft], [TopRigh]})),
+    KeptAllTops = Table.SelectColumns(AddedAllTops,{"All Tops"}),
+    ExpandedAllTops = Table.ExpandTableColumn(KeptAllTops, "All Tops", {"This.Colour", "Next.Colour"}),
+    FilteredSameColours = Table.SelectRows(ExpandedAllTops, each [This.Colour] <> [Next.Colour]),
 
     ExtractOrderedRelations = (table as table, columnA as text, columnB as text) as table =>
         let
@@ -48,17 +73,40 @@ let
         in
             PurgedDuplicates,
 
-    AllTopNeighbours = ExtractOrderedRelations(RemovedSameValues, "this.colour", "next.colour"),
+    AllTopNeighbours = ExtractOrderedRelations(FilteredSameColours, "This.Colour", "Next.Colour"),
 
+    /* To extract the right neighbours, we look at consecutive segments on the same scanline.
+    So, for example, say we have this unencoded scanline, where each letter is a pixel of that colour:
+        AAAAAABBCCCCAADDDAAAA
+    The Run Length Encoding will return this list of segments:
+        ABCADA
+    Thus, the adjacencies we will first extract, called the "Consecutives" are:
+        A-B
+        B-C
+        C-A
+        A-D
+        D-A
+    Then, they will be ordered:
+        A-B
+        B-C
+        A-C
+        A-D
+        A-D
+    And then the duplicates will be purged:
+        A-B
+        B-C
+        A-C
+        A-D
+    */
     #"~RIGHT NEIGHBOURS~" = "This step is to have a separator in the list of steps in the GUI",
     /* Group Segments by Row Index */
-    KeptRowAndColourFromRLE = Table.SelectColumns(RLEncoded,{"row", "colour"}),
-    GroupedSegments = Table.Group(KeptRowAndColourFromRLE, {"row"}, {{"Segments", each _, type table [row = number, colour = binary]}}, GroupKind.Local),
-    AddedSegmentsAsList = Table.AddColumn(GroupedSegments, "Segments.AsList", each Table.Column([Segments], "colour")),
-    AddedConsecutives = Table.AddColumn(AddedSegmentsAsList, "Consecutives", each Table.FromColumns({List.RemoveLastN([Segments.AsList],1), List.RemoveFirstN([Segments.AsList],1)}, type table[colour = binary, adj_colour = binary])),
+    KeptRowAndColourFromRLE = Table.SelectColumns(RLEncoded,{"Scanline Index", "Colour"}),
+    GroupedSegments = Table.Group(KeptRowAndColourFromRLE, {"Scanline Index"}, {{"Segments", each _, type table [Scanline Index = number, Colour = binary]}}, GroupKind.Local),
+    AddedSegmentsAsList = Table.AddColumn(GroupedSegments, "Segments.AsList", each Table.Column([Segments], "Colour"), type {binary}),
+    AddedConsecutives = Table.AddColumn(AddedSegmentsAsList, "Consecutives", each Table.FromColumns({List.RemoveLastN([Segments.AsList],1), List.RemoveFirstN([Segments.AsList],1)}, type table[colour = binary, adj_colour = binary]), type table[colour = binary, adj_colour = binary]),
     AddedOrderedConsecutives = Table.AddColumn(AddedConsecutives, "OrderedConsecutives", each ExtractOrderedRelations([Consecutives], "colour", "adj_colour"), type table[MinColour = binary, MaxColour = binary]),
     // This is necessary because if all the pixels in a scanline are the same colour, its subtable will be empty,
-    // and this will create error later on. This case is present in the Total War Warhammer 2 Vortex map.
+    // and this will create errors later on. This case is present in the Total War Warhammer 2 Vortex map.
     FilteredEmptyOrderedConsecutives = Table.SelectRows(AddedOrderedConsecutives, each not (Table.IsEmpty([OrderedConsecutives]))),
     
     /* (Boilerplate) Expand & keep consecutives */
@@ -74,8 +122,8 @@ let
     // relation = "A is adjacent to B" is one (1) relation, but in the final output it needs two rows: {A, B} & {B, A}
     //            By "relation", we mean only the row {A, B}, because that's enough to know we also need {B, A} later.
     CombinedAllOrderedRelations = Table.Combine({AllTopNeighbours, RightNeighbours}),
-    PurgedDuplicates = Table.Distinct(CombinedAllOrderedRelations),
-    AllUniqueRelations = PurgedDuplicates,
+    PurgedDuplicateOrderedRelations = Table.Distinct(CombinedAllOrderedRelations),
+    AllUniqueRelations = PurgedDuplicateOrderedRelations,
 
     #"~ALL ADJACENCIES~" = "This step is to have a separator in the list of steps in the GUI",
     AddedAdjacencies = Table.AddColumn(AllUniqueRelations, "Adjacencies", each Table.FromRecords({[colour=[MinColour], adj_colour=[MaxColour]], [colour=[MaxColour], adj_colour=[MinColour]]}), type table[colour=binary, adj_colour=binary]),
