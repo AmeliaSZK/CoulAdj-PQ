@@ -30,11 +30,13 @@ let
         & " <i>(1: ""BMP spec"" is short for ""BMP file format specifications"", and ""BMP"" means ""Bitmap"")</i>"
         & " The short explanation is that if you got a normal bitmap from a modern(2) computer, you'll be fine."
         & " <i>(2: At the time of writing, we are in May 2021)</i>"
-        & "You should be concerned about compatibility if you are in one these situations:"
+        & "</p>"
+        & "<p>"
+        & " You should be concerned about compatibility if you are in one these situations:"
         & "<ul>"
         & "<li>• You went out of your way to make a <i>compressed</i> bitmap</li>"
         & "<li>• Your bitmap was made on an IMB computer running OS/2, an operating system last released in 2001</li>"
-        & "<li>• You are so far in the future that a new extension to the BMP spec was released and that's what your file is using</li>"
+        & "<li>• You are so far in the future that a new extension to the BMP spec was released and your file is using it</li>"
         & "</ul>"
         & "</p>",
         Documentation.Examples = {[
@@ -113,8 +115,10 @@ in
 ...
 (72 rows in total. Example was truncated)"
         ],[
-            Description = "Extract the pixel array."
-            & " Notice that the colour is a binary value.",
+            Description = "Decode the colours in the pixel array."
+            & " Notice, in the `Decoded` step, how we specified the record type for the new column."
+            & " Furthermore, notice that the colour channels are ordered BGRA, instead of the conventional RGBA."
+            & " This is due to how a bitmap image stores that data, and that the conversion function does not do any re-ordering.",
             Code = 
 "let
     Source = 
@@ -124,25 +128,28 @@ in
             Decompressed = Binary.Decompress(Decoded, Compression.Deflate)
         in
             Decompressed,
-
     Parsed = GQ_ParseBitmap(Source),
-    PixelArray = Parsed[PixelArray.AsColours]
+    PixelArray = Parsed[PixelArray.AsColours],
+
+    Decoded = Table.AddColumn(PixelArray, ""Decoded"", each Parsed[RecordFromColour]([Colour]), Parsed[RecordFromColour.RecordType]),
+
+    Expanded = Table.ExpandRecordColumn(Decoded, ""Decoded"", {""Blue"", ""Green"", ""Red"", ""Alpha""})
 in
-    PixelArray",
+    Expanded",
             Result = 
-"[Row Index] [Column Index]  [Colour]
-0           0               [Binary]
-0           1               [Binary]
-0           2               [Binary]
-0           3               [Binary]
-0           4               [Binary]
-0           5               [Binary]
-0           6               [Binary]
-0           7               [Binary]
-0           8               [Binary]
-1           0               [Binary]
-1           1               [Binary]
-1           2               [Binary]
+"[Row Index] [Column Index] [Colour]  [Blue] [Green] [Red] [Alpha]
+0           0              [Binary]   30    220      10   250
+0           1              [Binary]   30    220      10   250
+0           2              [Binary]   30     20     210   246
+0           3              [Binary]   30     20     210   246
+0           4              [Binary]   30     20     210   246
+0           5              [Binary]   30     20     210   246
+0           6              [Binary]  230     20      10   252
+0           7              [Binary]  230     20      10   252
+0           8              [Binary]  230     20     210   244
+1           0              [Binary]   30    220      10   250
+1           1              [Binary]   30    220      10   250
+1           2              [Binary]   30    220      10   250
 ...
 (72 rows in total. Example was truncated)"
         ]}
