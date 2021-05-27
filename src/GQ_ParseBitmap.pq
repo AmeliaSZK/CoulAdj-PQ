@@ -7,8 +7,9 @@ let
         Documentation.Name = "GQ_ParseBitmap",
         Documentation.LongDescription = 
         "<p>"
-        & "Parses a bitmap image file (.bmp) and returns a record containing various information about the image,"
-        & " including the pixel array, and a function to convert the pixel colour to a record of color channels."
+        & "Parses a bitmap image file (<code>.bmp</code>) and returns a record containing various information about the image,"
+        & " including the indexed pixel array, a function to convert the pixel colour to a record of color channels,"
+        & " and the record type of said function's output."
         & "</p>"
         & "<p><b>Known Technical Limitations</b>"
         & "<ul>"
@@ -24,17 +25,99 @@ let
         & "    </ul>"
         & "</li>"
         & "</ul>"
-        & "These technical limitations refer to intricacies in the BMP spec, so it is normal if you don't know"
-        & " if your image is compatible, or if you don't even know what these words mean. "
-        & "The short explanation is that if you got a normal bitmap from a modern(*) computer, you'll be fine. "
-        & "<i>(*: At the time of writing, we are in May 2021) </i>"
+        & "These technical limitations refer to intricacies in the BMP spec(1), so it is normal if you don't know"
+        & " if your image is compatible, or if you don't even know what these words mean."
+        & " <i>(1: ""BMP spec"" is short for ""BMP file format specifications"", and ""BMP"" means ""Bitmap"")</i>"
+        & " The short explanation is that if you got a normal bitmap from a modern(2) computer, you'll be fine."
+        & " <i>(2: At the time of writing, we are in May 2021)</i>"
         & "You should be concerned about compatibility if you are in one these situations:"
         & "<ul>"
         & "<li>• You went out of your way to make a <i>compressed</i> bitmap</li>"
         & "<li>• Your bitmap was made on an IMB computer running OS/2, an operating system last released in 2001</li>"
         & "<li>• You are so far in the future that a new extension to the BMP spec was released and that's what your file is using</li>"
         & "</ul>"
-        & "</p>"
+        & "</p>",
+        Documentation.Examples = {[
+            Description = "How to get a sample image for these examples."
+                & " Using GQ_ParseBitmap requires a bitmap image file in input, so this example shows how the input used in the"
+                & " other examples is constructed."
+                & " You do not need to understand this code in order to use GQ_ParseBitmap.",
+            Code = 
+"let
+    Encoded = ""c/KdxcgABlVAnAPEnEDMAcSMDAoMzEBaASifyw3BCPAfhsAcRiQZYtggIHeH6xcYi1z6hoyfiXD9geBLX+BqoBghRws1lz4h42d3uH6gYHLVAMXQMSE1oHAAAA=="",
+    Decoded = Binary.FromText(Encoded, BinaryEncoding.Base64),
+    Decompressed = Binary.Decompress(Decoded, Compression.Deflate)
+in
+    Decompressed",
+            Result = "[Binary]"
+        ],[
+            Description = "Parse the image.",
+            Code = 
+"let
+    Source = 
+        let
+            Encoded = ""c/KdxcgABlVAnAPEnEDMAcSMDAoMzEBaASifyw3BCPAfhsAcRiQZYtggIHeH6xcYi1z6hoyfiXD9geBLX+BqoBghRws1lz4h42d3uH6gYHLVAMXQMSE1oHAAAA=="",
+            Decoded = Binary.FromText(Encoded, BinaryEncoding.Base64),
+            Decompressed = Binary.Decompress(Decoded, Compression.Deflate)
+        in
+            Decompressed,
+
+    Parsed = GQ_ParseBitmap(Source)
+in
+    Parsed",
+            Result = 
+"[r]     [g]     [b]     [a]     [adj_r] [adj_g] [adj_b] [adj_a]
+210     20      30      246     10      220     30      250
+10      220     30      250     210     20      30      246
+210     20      30      246     10      20      230     252
+10      20      230     252     210     20      30      246
+10      20      230     252     210     20      230     244
+210     20      230     244     10      20      230     252
+10      220     30      250     10      20      230     252
+10      20      230     252     10      220     30      250
+10      220     30      250     210     220     30      242
+210     220     30      242     10      220     30      250
+10      20      230     252     10      220     230     248
+10      220     230     248     10      20      230     252
+210     220     30      242     10      20      230     252
+10      20      230     252     210     220     30      242
+...
+(24 rows in total. Example was truncated)"
+        ],[
+            Description = "Compute the colour adjacencies, but without counting the diagonals as adjacent."
+            & " Notice that we now have less rows (20) than in the previous example (24).",
+            Code = 
+"let
+    Source = 
+        let
+            Encoded = ""c/KdxcgABlVAnAPEnEDMAcSMDAoMzEBaASifyw3BCPAfhsAcRiQZYtggIHeH6xcYi1z6hoyfiXD9geBLX+BqoBghRws1lz4h42d3uH6gYHLVAMXQMSE1oHAAAA=="",
+            Decoded = Binary.FromText(Encoded, BinaryEncoding.Base64),
+            Decompressed = Binary.Decompress(Decoded, Compression.Deflate)
+        in
+            Decompressed,
+
+    Adjacencies = GQ_CoulAdj(Source, true)
+in
+    Adjacencies",
+            Result = 
+"[r]     [g]     [b]     [a]     [adj_r] [adj_g] [adj_b] [adj_a]
+210     20      30      246     10      220     30      250
+10      220     30      250     210     20      30      246
+210     20      30      246     10      20      230     252
+10      20      230     252     210     20      30      246
+10      220     30      250     210     220     30      242
+210     220     30      242     10      220     30      250
+10      20      230     252     10      220     230     248
+10      220     230     248     10      20      230     252
+210     20      230     244     10      220     230     248
+10      220     230     248     210     20      230     244
+210     20      30      246     210     20      230     244
+210     20      230     244     210     20      30      246
+10      20      230     252     210     20      230     244
+210     20      230     244     10      20      230     252
+...
+(20 rows in total. Example was truncated)"
+        ]}
     ],
 
     ParseBitmap = (bitmap as binary) as record =>

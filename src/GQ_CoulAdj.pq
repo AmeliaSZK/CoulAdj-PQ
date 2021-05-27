@@ -53,7 +53,7 @@ let
         & "</p>",
         Documentation.Examples = {[
             Description = "How to get a sample image for these examples."
-                & " Using GQ_CoulAdj requires a bitmap image file in, so this example shows how the input used in the"
+                & " Using GQ_CoulAdj requires a bitmap image file in input, so this example shows how the input used in the"
                 & " other examples is constructed."
                 & " You do <i>not</i> need to understand this code in order to use GQ_CoulAdj."
                 & "",
