@@ -19,6 +19,18 @@ let
         & " So if Red is adjacent to Blue, then necessarily, Blue is adjacent to Red."
         & " Hence, you will get two rows in the output: One for Red-Blue, and another for Blue-Red."
         & "</p>"
+        & "<p>"
+        & "The alpha columns (<code>a</code> and <code>adj_a</code>) are only included when the image has an alpha channel."
+        & "</p>"
+        & "<p>"
+        & "The order of the columns is guaranteed:"
+        & "<ul>"
+        & "<li>• <code>r, g, b, adj_r, adj_g, adj_b</code>"
+        & " for image <i>without</i> an alpha channel</li>"
+        & "<li>• <code>r, g, b, a, adj_r, adj_g, adj_b, adj_a</code>"
+        & " for image <i>with</i> an alpha channel</li>"
+        & "</ul>"
+        & "</p>"
         & "<p> <b>Parameters</b>"
         & "<ul>"
         & "<li>• <code>bitmap</code>: The bitmap image file</li>"
@@ -38,7 +50,77 @@ let
         & "</li>"
         & "</li>"
         & "</ul>"
-        & "</p>"
+        & "</p>",
+        Documentation.Examples = {[
+            Description = "How to get a sample image for these examples."
+                & " Using GQ_CoulAdj requires a bitmap image file in, so this example shows how the input used in the"
+                & " other examples is constructed."
+                & " You do <i>not</i> need to understand this code in order to use GQ_CoulAdj."
+                & "",
+            Code = 
+"let
+    Encoded = ""c/KdxcgABlVAnAPEnEDMAcSMDAoMzEBaASifyw3BCPAfhsAcRiQZYtggIHeH6xcYi1z6hoyfiXD9geBLX+BqoBghRws1lz4h42d3uH6gYHLVAMXQMSE1oHAAAA=="",
+    Decoded = Binary.FromText(Encoded, BinaryEncoding.Base64),
+    Decompressed = Binary.Decompress(Decoded, Compression.Deflate)
+in
+    Decompressed",
+            Result = "[Binary]"
+        ],[
+            Description = "Compute the colour adjacencies."
+            & " Notice how the 2nd row contains the same colours as the first row, but on different sides:"
+            & " Columns r,g,b,a in 1st row have the same value as adj_r,adj_g,adj_b,adj_a in the 2nd row, and vice versa.",
+            Code = 
+"let
+    Source = ...,
+    Adjacencies = GQ_CoulAdj(Source)
+in
+    Adjacencies",
+            Result = 
+"[r]     [g]     [b]     [a]     [adj_r] [adj_g] [adj_b] [adj_a]
+210     20      30      246     10      220     30      250
+10      220     30      250     210     20      30      246
+210     20      30      246     10      20      230     252
+10      20      230     252     210     20      30      246
+10      20      230     252     210     20      230     244
+210     20      230     244     10      20      230     252
+10      220     30      250     10      20      230     252
+10      20      230     252     10      220     30      250
+10      220     30      250     210     220     30      242
+210     220     30      242     10      220     30      250
+10      20      230     252     10      220     230     248
+10      220     230     248     10      20      230     252
+210     220     30      242     10      20      230     252
+10      20      230     252     210     220     30      242
+...
+(24 rows in total. Example was truncated)"
+        ],[
+            Description = "Compute the colour adjacencies, but without counting the diagonals as adjacent."
+            & " Notice that there is less rows (20) than in the previous example (24).",
+            Code = 
+"let
+    Source = ...,
+    Adjacencies = GQ_CoulAdj(Source, true)
+in
+    Adjacencies",
+            Result = 
+"[r]     [g]     [b]     [a]     [adj_r] [adj_g] [adj_b] [adj_a]
+210     20      30      246     10      220     30      250
+10      220     30      250     210     20      30      246
+210     20      30      246     10      20      230     252
+10      20      230     252     210     20      30      246
+10      220     30      250     210     220     30      242
+210     220     30      242     10      220     30      250
+10      20      230     252     10      220     230     248
+10      220     230     248     10      20      230     252
+210     20      230     244     10      220     230     248
+10      220     230     248     210     20      230     244
+210     20      30      246     210     20      230     244
+210     20      230     244     210     20      30      246
+10      20      230     252     210     20      230     244
+210     20      230     244     10      20      230     252
+...
+(20 rows in total. Example was truncated)"
+        ]}
     ],
 
     CoulAdj = (bitmap as binary, optional dontRelateDiagonals as logical) =>
