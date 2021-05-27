@@ -9,16 +9,36 @@ let
         ])
     ) as record meta [
         Documentation.Name = "GQ_CoulAdj",
-        Documentation.LongDescription = "Start the description with an action verb and a 1-sentence description of what the function does. ",
-        Documentation.Examples = {[
-            Description = "(Extract the pixel array?)",
-            Code = "GQ_FunctionTemplate(""Amélia"")",
-            Result = """Hello Amélia"""
-        ],[
-            Description = "(Convert colours to RGB?)",
-            Code = "GQ_FunctionTemplate()",
-            Result = """Hello"""
-        ]}
+        Documentation.LongDescription = 
+        "<p>"
+        & "Computes, for each colour, the list of all adjacent colours in a bitmap image."
+        & " Optionally, you can specify that diagonals do not count as adjacent."
+        & "</p>"
+        & "<p>"
+        & "Both sides of the relations are included in the output."
+        & " So if Red is adjacent to Blue, then necessarily, Blue is adjacent to Red."
+        & " Hence, you will get two rows in the output: One for Red-Blue, and another for Blue-Red."
+        & "</p>"
+        & "<p> <b>Parameters</b>"
+        & "<ul>"
+        & "<li>• <code>bitmap</code>: The bitmap image file</li>"
+        & "<li>• <code>dontRelateDiagonals</code>: Optional, default value is </code>false</code>."
+        & " When <code>true</code>, only the 4 neighbours with a common edge (top, bottom, left, and right) will be considered adjacent."
+        & " Otherwise, the diagonals (top-left, top-right, bottom-left, and bottom-right) will also be considered adjacent."
+        & "</li>"
+        & "</ul>"
+        & "</p>"
+        & "<p> <b>Technical Limitations</b>"
+        & "<ul>"
+        & "<li>• Not all bitmap formats are supported. For details, see the documentation for <code>GQ_ParseBitmap</code></li>"
+        & "<li>• This function was optimized for performance when processing large images (~13 megapixels) representing a geographic map."
+        & " If your use-case deviates too much from ours, you may experience long processing times."
+        & " And by ""long"", we mean 2~12 <i>minutes</i>, maybe more."
+        & " By comparison, images for our use-case take around 14~32 seconds to process."
+        & "</li>"
+        & "</li>"
+        & "</ul>"
+        & "</p>"
     ],
 
     CoulAdj = (bitmap as binary, optional dontRelateDiagonals as logical) =>
