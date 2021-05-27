@@ -1,4 +1,6 @@
 let
+    GQ_CoulAdj =
+let
     Documentation = type function(
         bitmap as (type binary meta [
             Documentation.FieldCaption = "Bitmap Image File"
@@ -440,3 +442,5 @@ in
     DocumentedCall = Value.ReplaceType(CoulAdj, Documentation)
 in
     DocumentedCall
+in
+    GQ_CoulAdj

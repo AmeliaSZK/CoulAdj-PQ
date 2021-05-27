@@ -1,4 +1,6 @@
 let
+    GQ_ParseBitmap =
+let
     Documentation = type function(
         bitmap as (type binary meta [
             Documentation.FieldCaption = "Bitmap Image File"
@@ -489,3 +491,5 @@ in
     DocumentedCall = Value.ReplaceType(ParseBitmap, Documentation)
 in
     DocumentedCall
+in
+    GQ_ParseBitmap
