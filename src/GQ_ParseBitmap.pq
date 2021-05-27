@@ -66,26 +66,22 @@ in
 in
     Parsed",
             Result = 
-"[r]     [g]     [b]     [a]     [adj_r] [adj_g] [adj_b] [adj_a]
-210     20      30      246     10      220     30      250
-10      220     30      250     210     20      30      246
-210     20      30      246     10      20      230     252
-10      20      230     252     210     20      30      246
-10      20      230     252     210     20      230     244
-210     20      230     244     10      20      230     252
-10      220     30      250     10      20      230     252
-10      20      230     252     10      220     30      250
-10      220     30      250     210     220     30      242
-210     220     30      242     10      220     30      250
-10      20      230     252     10      220     230     248
-10      220     230     248     10      20      230     252
-210     220     30      242     10      20      230     252
-10      20      230     252     210     220     30      242
-...
-(24 rows in total. Example was truncated)"
+"[
+    NbPixels = 72,
+    NbRows = 8,
+    NbCols = 9,
+    HasAlpha = TRUE,
+    BytesPerPixel = 4,
+    IsBottomUp = TRUE,
+    IsTopDown = FALSE,
+    PixelArray.AsColours = [Table],
+    RecordFromColour = [Function],
+    RecordFromColour.RecordType = [Type],
+    ImageHeader = [Record]
+]"
         ],[
-            Description = "Compute the colour adjacencies, but without counting the diagonals as adjacent."
-            & " Notice that we now have less rows (20) than in the previous example (24).",
+            Description = "Extract the pixel array."
+            & " Notice that the colour is a binary value.",
             Code = 
 "let
     Source = 
@@ -96,27 +92,59 @@ in
         in
             Decompressed,
 
-    Adjacencies = GQ_CoulAdj(Source, true)
+    Parsed = GQ_ParseBitmap(Source),
+    PixelArray = Parsed[PixelArray.AsColours]
 in
-    Adjacencies",
+    PixelArray",
             Result = 
-"[r]     [g]     [b]     [a]     [adj_r] [adj_g] [adj_b] [adj_a]
-210     20      30      246     10      220     30      250
-10      220     30      250     210     20      30      246
-210     20      30      246     10      20      230     252
-10      20      230     252     210     20      30      246
-10      220     30      250     210     220     30      242
-210     220     30      242     10      220     30      250
-10      20      230     252     10      220     230     248
-10      220     230     248     10      20      230     252
-210     20      230     244     10      220     230     248
-10      220     230     248     210     20      230     244
-210     20      30      246     210     20      230     244
-210     20      230     244     210     20      30      246
-10      20      230     252     210     20      230     244
-210     20      230     244     10      20      230     252
+"[Row Index] [Column Index]  [Colour]
+0           0               [Binary]
+0           1               [Binary]
+0           2               [Binary]
+0           3               [Binary]
+0           4               [Binary]
+0           5               [Binary]
+0           6               [Binary]
+0           7               [Binary]
+0           8               [Binary]
+1           0               [Binary]
+1           1               [Binary]
+1           2               [Binary]
 ...
-(20 rows in total. Example was truncated)"
+(72 rows in total. Example was truncated)"
+        ],[
+            Description = "Extract the pixel array."
+            & " Notice that the colour is a binary value.",
+            Code = 
+"let
+    Source = 
+        let
+            Encoded = ""c/KdxcgABlVAnAPEnEDMAcSMDAoMzEBaASifyw3BCPAfhsAcRiQZYtggIHeH6xcYi1z6hoyfiXD9geBLX+BqoBghRws1lz4h42d3uH6gYHLVAMXQMSE1oHAAAA=="",
+            Decoded = Binary.FromText(Encoded, BinaryEncoding.Base64),
+            Decompressed = Binary.Decompress(Decoded, Compression.Deflate)
+        in
+            Decompressed,
+
+    Parsed = GQ_ParseBitmap(Source),
+    PixelArray = Parsed[PixelArray.AsColours]
+in
+    PixelArray",
+            Result = 
+"[Row Index] [Column Index]  [Colour]
+0           0               [Binary]
+0           1               [Binary]
+0           2               [Binary]
+0           3               [Binary]
+0           4               [Binary]
+0           5               [Binary]
+0           6               [Binary]
+0           7               [Binary]
+0           8               [Binary]
+1           0               [Binary]
+1           1               [Binary]
+1           2               [Binary]
+...
+(72 rows in total. Example was truncated)"
         ]}
     ],
 
