@@ -5,16 +5,36 @@ let
         ])
     ) as record meta [
         Documentation.Name = "GQ_ParseBitmap",
-        Documentation.LongDescription = "Start the description with an action verb and a 1-sentence description of what the function does. ",
-        Documentation.Examples = {[
-            Description = "(Extract the pixel array?)",
-            Code = "GQ_FunctionTemplate(""Amélia"")",
-            Result = """Hello Amélia"""
-        ],[
-            Description = "(Convert colours to RGB?)",
-            Code = "GQ_FunctionTemplate()",
-            Result = """Hello"""
-        ]}
+        Documentation.LongDescription = 
+        "<p>"
+        & "Parses a bitmap image file (.bmp) and returns a record containing various information about the image,"
+        & " including the pixel array, and a function to convert the pixel colour to a record of color channels."
+        & "</p>"
+        & "<p><b>Known Technical Limitations</b>"
+        & "<ul>"
+        & "<li>• Only supports 24-bit and 32-bit depths</li>"
+        & "<li>• Compressed images are not supported</li>"
+        & "<li>• Bit fields are not supported</li>"
+        & "<li>• Only supports the most common bitmap headers:"
+        & "    <ul>"
+        & "    <li>⁃ BITMAPCOREHEADER</li>"
+        & "    <li>⁃ BITMAPINFOHEADER</li>"
+        & "    <li>⁃ BITMAPV4HEADER</li>"
+        & "    <li>⁃ BITMAPV5HEADER</li>"
+        & "    </ul>"
+        & "</li>"
+        & "</ul>"
+        & "These technical limitations refer to intricacies in the BMP spec, so it is normal if you don't know"
+        & " if your image is compatible, or if you don't even know what these words mean. "
+        & "The short explanation is that if you got a normal bitmap from a modern(*) computer, you'll be fine. "
+        & "<i>(*: At the time of writing, we are in May 2021) </i>"
+        & "You should be concerned about compatibility if you are in one these situations:"
+        & "<ul>"
+        & "<li>• You went out of your way to make a <i>compressed</i> bitmap</li>"
+        & "<li>• Your bitmap was made on an IMB computer running OS/2, an operating system last released in 2001</li>"
+        & "<li>• You are so far in the future that a new extension to the BMP spec was released and that's what your file is using</li>"
+        & "</ul>"
+        & "</p>"
     ],
 
     ParseBitmap = (bitmap as binary) as record =>
