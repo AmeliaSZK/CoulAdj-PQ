@@ -71,7 +71,14 @@ in
             & " Columns r,g,b,a in 1st row have the same value as adj_r,adj_g,adj_b,adj_a in the 2nd row, and vice versa.",
             Code = 
 "let
-    Source = ...,
+    Source = 
+        let
+            Encoded = ""c/KdxcgABlVAnAPEnEDMAcSMDAoMzEBaASifyw3BCPAfhsAcRiQZYtggIHeH6xcYi1z6hoyfiXD9geBLX+BqoBghRws1lz4h42d3uH6gYHLVAMXQMSE1oHAAAA=="",
+            Decoded = Binary.FromText(Encoded, BinaryEncoding.Base64),
+            Decompressed = Binary.Decompress(Decoded, Compression.Deflate)
+        in
+            Decompressed,
+
     Adjacencies = GQ_CoulAdj(Source)
 in
     Adjacencies",
@@ -95,10 +102,17 @@ in
 (24 rows in total. Example was truncated)"
         ],[
             Description = "Compute the colour adjacencies, but without counting the diagonals as adjacent."
-            & " Notice that there is less rows (20) than in the previous example (24).",
+            & " Notice that we now have less rows (20) than in the previous example (24).",
             Code = 
 "let
-    Source = ...,
+    Source = 
+        let
+            Encoded = ""c/KdxcgABlVAnAPEnEDMAcSMDAoMzEBaASifyw3BCPAfhsAcRiQZYtggIHeH6xcYi1z6hoyfiXD9geBLX+BqoBghRws1lz4h42d3uH6gYHLVAMXQMSE1oHAAAA=="",
+            Decoded = Binary.FromText(Encoded, BinaryEncoding.Base64),
+            Decompressed = Binary.Decompress(Decoded, Compression.Deflate)
+        in
+            Decompressed,
+
     Adjacencies = GQ_CoulAdj(Source, true)
 in
     Adjacencies",
