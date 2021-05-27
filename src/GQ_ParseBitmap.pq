@@ -28,7 +28,7 @@ let
         & "These technical limitations refer to intricacies in the BMP spec(1), so it is normal if you don't know"
         & " if your image is compatible, or if you don't even know what these words mean."
         & " <i>(1: ""BMP spec"" is short for ""BMP file format specifications"", and ""BMP"" means ""Bitmap"")</i>"
-        & " The short explanation is that if you got a normal bitmap from a modern(2) computer, you'll be fine."
+        & " The short explanation is that if you got a normal bitmap from a modern(2) computer, you should be fine."
         & " <i>(2: At the time of writing, we are in May 2021)</i>"
         & "</p>"
         & "<p>"
@@ -41,8 +41,7 @@ let
         & "</p>",
         Documentation.Examples = {[
             Description = "How to get a sample image for these examples."
-                & " Using GQ_ParseBitmap requires a bitmap image file in input, so this example shows how the input used in the"
-                & " other examples is constructed."
+                & " Using GQ_ParseBitmap requires a bitmap image file in input, so this example shows how to construct one."
                 & " You do not need to understand this code in order to use GQ_ParseBitmap.",
             Code = 
 "let
@@ -53,7 +52,7 @@ in
     Decompressed",
             Result = "[Binary]"
         ],[
-            Description = "Parse the image.",
+            Description = "Parse the image and get the record",
             Code = 
 "let
     Source = 
@@ -93,8 +92,8 @@ in
             Decompressed = Binary.Decompress(Decoded, Compression.Deflate)
         in
             Decompressed,
-
     Parsed = GQ_ParseBitmap(Source),
+
     PixelArray = Parsed[PixelArray.AsColours]
 in
     PixelArray",
@@ -118,7 +117,7 @@ in
             Description = "Decode the colours in the pixel array."
             & " Notice, in the `Decoded` step, how we specified the record type for the new column."
             & " Furthermore, notice that the colour channels are ordered BGRA, instead of the conventional RGBA."
-            & " This is due to how a bitmap image stores that data, and that the conversion function does not do any re-ordering.",
+            & " This is due to how a bitmap image stores that data, and the conversion function does not do any re-ordering.",
             Code = 
 "let
     Source = 
@@ -138,18 +137,18 @@ in
     Expanded",
             Result = 
 "[Row Index] [Column Index] [Colour]  [Blue] [Green] [Red] [Alpha]
-0           0              [Binary]   30    220      10   250
-0           1              [Binary]   30    220      10   250
-0           2              [Binary]   30     20     210   246
-0           3              [Binary]   30     20     210   246
-0           4              [Binary]   30     20     210   246
-0           5              [Binary]   30     20     210   246
-0           6              [Binary]  230     20      10   252
-0           7              [Binary]  230     20      10   252
-0           8              [Binary]  230     20     210   244
-1           0              [Binary]   30    220      10   250
-1           1              [Binary]   30    220      10   250
-1           2              [Binary]   30    220      10   250
+0           0              [Binary]  30     220     10    250
+0           1              [Binary]  30     220     10    250
+0           2              [Binary]  30     20      210   246
+0           3              [Binary]  30     20      210   246
+0           4              [Binary]  30     20      210   246
+0           5              [Binary]  30     20      210   246
+0           6              [Binary]  230    20      10    252
+0           7              [Binary]  230    20      10    252
+0           8              [Binary]  230    20      210   244
+1           0              [Binary]  30     220     10    250
+1           1              [Binary]  30     220     10    250
+1           2              [Binary]  30     220     10    250
 ...
 (72 rows in total. Example was truncated)"
         ]}
