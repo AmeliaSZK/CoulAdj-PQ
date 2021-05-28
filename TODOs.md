@@ -15,5 +15,14 @@
 * [ ] Write a sensible Readme
 * [ ] Write (some?) instructions in Workbook
 * [ ] Thorough inspection of the workbook & repo to guard against leaks of private information
+* **IMPORTANT**
+    * [ ] Copy & rename the dev workbook
+    * [ ] In the showcase workbook, blank RepoRoot
+    * [ ] Save after blanking RepoRoot
+    * [ ] Close showcase workbook
+    * [ ] Open showcase workbook
+    * [ ] Verify RepoRoot
+    * [ ] Perform final inspection of showcase workbook
+    * [ ] Allow showcase workbook to be tracked by Git
 * [ ] Make the repo public
 * [ ] Take screenshots & tweet a glorious thread
