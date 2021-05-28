@@ -16,7 +16,7 @@
     to the dev workbook at the time of creation
 * [ ] Write a sensible Readme
 * [ ] Write (some?) instructions in Workbook
-* [ ] Thorough inspection of the workbook & repo to guard against leaks of private information
+* [x] Thorough inspection of the workbook & repo to guard against leaks of private information
     * The two "hidden names" are for the queries loaded to a worksheet
     * The "custom XML datas" are the Power Query queries, lolsob.
         * This even includes query groups!!
