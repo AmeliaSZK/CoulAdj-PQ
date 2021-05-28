@@ -1,13 +1,5 @@
 # TODOs
 
-* [x] Task one
-    * [ ] One.One
-    * [ ] One.Two
-* [ ] Task two
-    * [ ] Two.One
-    * [x] Two.Two
-
-
 * [ ] Review of the test-bench to see how it behaves without the proprietary samples
     * [x] Reviewed
     * [ ] What happens without proprietary
