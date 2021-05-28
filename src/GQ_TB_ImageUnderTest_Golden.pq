@@ -13,6 +13,6 @@ let
             GQ_TB_GoldenBinaries[golden]
         else
             ...,
-    Parsed = GQ_TB_ParseRgbAlphaTSV(Source)
+    Parsed = GQ_TB_ParseGoldenTSV(Source)
 in
     Parsed
