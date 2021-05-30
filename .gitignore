@@ -1,2 +1,3 @@
-CoulAdj-PQ.xlsx
+*.xlsx
 ~$*.xlsx
+!CoulAdj-PQ_Showcase.xlsx

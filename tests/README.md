@@ -10,6 +10,10 @@ All samples should produce the same output, and this output should be identical,
 byte for byte(\*), to `golden.tsv`. (\*: The line endings may differ depending on the 
 platform where the output was produced.)
 
+There is a [repository dedicated to the test samples](https://github.com/AmeliaSZK/CoulAdj-TestSamples).
+This repository also contains details on how the samples were
+[generated](https://github.com/AmeliaSZK/CoulAdj-TestSamples/tree/main/generation).
+
 
 # Preview
 
@@ -56,7 +60,7 @@ The included sizes are:
 The high quantity of sizes is meant to verify if the implementation went
 [quadratic](https://en.wikipedia.org/wiki/Time_complexity#Sub-quadratic_time) 
 in languages with a slow execution time.
-(Our best Power Query implementation to date takes a whooping 8 minutes. 
+(A naïve implementation in Power Query takes a whooping 8 minutes. 
 And yes, this is with a sub-quadratic implementation.)
 
 > Each size has 4 times the amount of pixels than the previous size.

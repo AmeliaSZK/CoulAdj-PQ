@@ -1,146 +1,12 @@
 let
-    GQ_CoulAdj =
-let
-    Documentation = type function(
-        bitmap as (type binary meta [
-            Documentation.FieldCaption = "Bitmap Image File"
-        ]),
-        optional dontRelateDiagonals as (type logical meta [
-            Documentation.FieldCaption = "Don't Relate Diagonals",
-            Documentation.AllowedValues = { false, true }
-        ])
-    ) as record meta [
-        Documentation.Author = "Amélia SZK",
-        Documentation.Name = "GQ_CoulAdj",
-        Documentation.LongDescription = 
-        "<p>"
-        & "Computes, for each colour, the list of all adjacent colours in a bitmap image."
-        & " Optionally, you can specify that diagonals do not count as adjacent."
-        & "</p>"
-        & "<p>"
-        & "Both sides of the relations are included in the output."
-        & " So if Red is adjacent to Blue, then, necessarily, Blue is adjacent to Red."
-        & " Hence, you will get two rows in the output: One for Red-Blue, and another for Blue-Red."
-        & "</p>"
-        & "<p>"
-        & "The alpha columns (<code>a</code> and <code>adj_a</code>) are only included when the image has an alpha channel."
-        & "</p>"
-        & "<p>"
-        & "The order of the columns is guaranteed:"
-        & "<ul>"
-        & "<li>• <code>r, g, b, adj_r, adj_g, adj_b</code>"
-        & " for image <i>without</i> an alpha channel</li>"
-        & "<li>• <code>r, g, b, a, adj_r, adj_g, adj_b, adj_a</code>"
-        & " for image <i>with</i> an alpha channel</li>"
-        & "</ul>"
-        & "</p>"
-        & "<p> <b>Parameters</b>"
-        & "<ul>"
-        & "<li>• <code>bitmap</code>: The bitmap image file</li>"
-        & "<li>• <code>dontRelateDiagonals</code>: Optional, default value is <code>false</code>."
-        & " When <code>true</code>, only the 4 neighbours with a common edge (top, bottom, left, and right) will be considered adjacent."
-        & " Otherwise, the diagonals (top-left, top-right, bottom-left, and bottom-right) will also be considered adjacent."
-        & "</li>"
-        & "</ul>"
-        & "</p>"
-        & "<p> <b>Technical Limitations</b>"
-        & "<ul>"
-        & "<li>• Not all bitmap formats are supported. For details, see the documentation for <code>GQ_ParseBitmap</code></li>"
-        & "<li>• This function was optimized for performance when processing large images (~13 megapixels) representing a geographic map."
-        & " If your use-case deviates too much from ours, you may experience long processing times."
-        & " And by ""long"", we mean 2~12 <i>minutes</i>, maybe more."
-        & " By comparison, images for our use-case take around 14~32 seconds to process."
-        & "</li>"
-        & "</li>"
-        & "</ul>"
-        & "</p>",
-        Documentation.Examples = {[
-            Description = "How to get a sample image for these examples."
-                & " Using GQ_CoulAdj requires a bitmap image file in input, so this example shows how to construct one."
-                & " You do <i>not</i> need to understand this code in order to use GQ_CoulAdj."
-                & "",
-            Code = 
-"let
-    Encoded = ""c/KdxcgABlVAnAPEnEDMAcSMDAoMzEBaASifyw3BCPAfhsAcRiQZYtggIHeH6xcYi1z6hoyfiXD9geBLX+BqoBghRws1lz4h42d3uH6gYHLVAMXQMSE1oHAAAA=="",
-    Decoded = Binary.FromText(Encoded, BinaryEncoding.Base64),
-    Decompressed = Binary.Decompress(Decoded, Compression.Deflate)
-in
-    Decompressed",
-            Result = "[Binary]"
-        ],[
-            Description = "Compute the colour adjacencies."
-            & " Notice how the 2nd row contains the same colours as the first row, but on different sides:"
-            & " Columns r,g,b,a in 1st row have the same value as adj_r,adj_g,adj_b,adj_a in the 2nd row, and vice versa.",
-            Code = 
-"let
-    Source = 
-        let
-            Encoded = ""c/KdxcgABlVAnAPEnEDMAcSMDAoMzEBaASifyw3BCPAfhsAcRiQZYtggIHeH6xcYi1z6hoyfiXD9geBLX+BqoBghRws1lz4h42d3uH6gYHLVAMXQMSE1oHAAAA=="",
-            Decoded = Binary.FromText(Encoded, BinaryEncoding.Base64),
-            Decompressed = Binary.Decompress(Decoded, Compression.Deflate)
-        in
-            Decompressed,
-
-    Adjacencies = GQ_CoulAdj(Source)
-in
-    Adjacencies",
-            Result = 
-"[r]     [g]     [b]     [a]     [adj_r] [adj_g] [adj_b] [adj_a]
-210     20      30      246     10      220     30      250
-10      220     30      250     210     20      30      246
-210     20      30      246     10      20      230     252
-10      20      230     252     210     20      30      246
-10      20      230     252     210     20      230     244
-210     20      230     244     10      20      230     252
-10      220     30      250     10      20      230     252
-10      20      230     252     10      220     30      250
-10      220     30      250     210     220     30      242
-210     220     30      242     10      220     30      250
-10      20      230     252     10      220     230     248
-10      220     230     248     10      20      230     252
-210     220     30      242     10      20      230     252
-10      20      230     252     210     220     30      242
-...
-(24 rows in total. Example was truncated)"
-        ],[
-            Description = "Compute the colour adjacencies, but without counting the diagonals as adjacent."
-            & " Notice that we now have less rows (20) than in the previous example (24).",
-            Code = 
-"let
-    Source = 
-        let
-            Encoded = ""c/KdxcgABlVAnAPEnEDMAcSMDAoMzEBaASifyw3BCPAfhsAcRiQZYtggIHeH6xcYi1z6hoyfiXD9geBLX+BqoBghRws1lz4h42d3uH6gYHLVAMXQMSE1oHAAAA=="",
-            Decoded = Binary.FromText(Encoded, BinaryEncoding.Base64),
-            Decompressed = Binary.Decompress(Decoded, Compression.Deflate)
-        in
-            Decompressed,
-
-    Adjacencies = GQ_CoulAdj(Source, true)
-in
-    Adjacencies",
-            Result = 
-"[r]     [g]     [b]     [a]     [adj_r] [adj_g] [adj_b] [adj_a]
-210     20      30      246     10      220     30      250
-10      220     30      250     210     20      30      246
-210     20      30      246     10      20      230     252
-10      20      230     252     210     20      30      246
-10      220     30      250     210     220     30      242
-210     220     30      242     10      220     30      250
-10      20      230     252     10      220     230     248
-10      220     230     248     10      20      230     252
-210     20      230     244     10      220     230     248
-10      220     230     248     210     20      230     244
-210     20      30      246     210     20      230     244
-210     20      230     244     210     20      30      246
-10      20      230     252     210     20      230     244
-210     20      230     244     10      20      230     252
-...
-(20 rows in total. Example was truncated)"
-        ]}
-    ],
-
-    CoulAdj = (bitmap as binary, optional dontRelateDiagonals as logical) =>
-let
+    Documentation.Author = "Amélia SZK",
+    // To make the showcase work, function arguments had to be converted to variables with a value
+    #"~PARAMETERS~" = "This step is to have a separator in the list of steps in the GUI",
+    // You can (and *should*) change this value with GQ_ImageUnderTest_Name
+    bitmap = GQ_TB_ImageUnderTest_Binary as binary,
+    dontRelateDiagonals = GQ_DontRelateDiagonals as nullable logical,
+    // Everything beyond this point is a copy-pasta from the actual function
+    #"~START OF FUNCTION~" = "This step is to have a separator in the list of steps in the GUI",
     DontRelateDiagonals = if dontRelateDiagonals is null then false else dontRelateDiagonals,
 
 
@@ -438,10 +304,4 @@ let
     ReorderedColumnsPerCoulAdjAPI = Table.ReorderColumns(RenamedColumnsPerCoulAdjAPI, ColumnOrder),
     FormattedOutput = ReorderedColumnsPerCoulAdjAPI 
 in
-    FormattedOutput,
-
-    DocumentedCall = Value.ReplaceType(CoulAdj, Documentation)
-in
-    DocumentedCall
-in
-    GQ_CoulAdj
+    FormattedOutput
