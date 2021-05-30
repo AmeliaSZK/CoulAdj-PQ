@@ -45,9 +45,80 @@ Search for .bmp files of ~50 MB. Copy them to `./tests/proprietary`. Look in [GQ
 [GQ_ParseBitmap](./src/GQ_ParseBitmap.pq) 
 and [GQ_CoulAdj](./src/GQ_CoulAdj.pq). Everything else is for debug and development.
 
-## Known Requirements
+# Context
+*This section explains what is Power Query and why it was used to
+implement CoulAdj. No instructions are contained here; feel free to skip.*
 
-### Read the code
+## What Is Power Query?
+
+Power Query is a proprietary language designed by Microsoft to import and "shape"
+data into Microsoft Excel and other data-processing products. 
+([official website](https://docs.microsoft.com/en-us/powerquery-m/))
+
+What is meant by "shaping data" is stuff like renaming columns, reordering,
+removing them, filtering rows, text manipulation, etc etc. The main way users
+are meant to interact with Power Query is through its editor. The editor provides
+buttons to click, and these clicks will generate code in the Power Query M 
+Formula Language. Users can view and modify this code in the Advanced Editor, 
+which is actually a barebones text editor that looks more like Notepad than
+Excel. For images, see the [official quick tour](https://docs.microsoft.com/en-us/powerquery-m/quick-tour-of-the-power-query-m-formula-language).
+
+The main selling point of Power Query (imo) is the automation. If you data source
+was update since the time you made your query, like, say the source was a CSV of
+the sale data, and data for last week got added to the file, well you can click
+a single button in your workbook to "refresh", and the query will repeat all the steps you did,
+but this time with the updated file. And eveything linked to this query in your
+Excel workbook will also update itself.
+
+In our case, we use Power Query to analyze the internal database of Total War
+video games, and the one-click refresh is used when the game received an update
+so that our workbook stays up-to-date with the latest toys added to the game 🤓
+
+## CoulAdj
+
+The reason we built CoulAdj in the first place wasn't to get the colour adjacencies
+in any random image, but because we wanted the *region* adjacencies in a Total War
+campaign map. 
+
+Total War games are turn-by-turn games of war, conquest, and developping your
+territory. Also, the other half of the game is about waging your battles in
+real-time, and is the aspect on which marketing trailers focus on.
+
+Anywayz. Some buildings and game mechanics have effects on *adjacent* regions.
+For examples, a game could make you choose between upgrading a building
+to either give +10% farm income to adjacent regions, or +15% industry income
+to adjacent regions. Which is better depends on what regions are adjacent, and
+I enjoy building spreadsheet to perform these calculations automatically.
+
+Another example is in Warhammer 2, where Skavens can build hidden outposts
+in *foreign* regions, and in these outposts, they can make an expensive building
+that, each turn, tries to create a new *free* outpost in *each* adjacent foreign region
+with a 10% success rate. So for 8 adjacent regions, you get 8 attempts each turn.
+In this case, the question is about where is it the most worth to build the first outpost.
+
+Anywayz. Total War games come with an optional Assembly Kit intended for modders.
+This kit contains the internal database, where we can find the list of all regions,
+and it also contains bitmap images for each campaign map, where each region has
+its territory identified by a distinct colour. Conveniently, in the `regions`
+table of the database, we also have a colour assigned to each region.
+
+So the goal of CoulAdj is to analyze the map, and then output the list of colour
+adjacencies. Then, in Power Query, the colours are cross-reference with the
+database to be replaced with their associated region. These region adjacencies
+are then loaded into the Excel workbook for further processing.
+
+
+## Why Implement CoulAdj in Power Query
+
+
+
+
+
+
+
+# Known Requirements
+
+## To read the code
 If you do not mind not having syntax colouring, your web browser and this Github
 repository are enough.
 
@@ -56,7 +127,7 @@ To get syntax colouring, you have two options:
 with the extension [Power Query / M Language](https://marketplace.visualstudio.com/items?itemName=PowerQuery.vscode-powerquery), made by Microsoft
 1. The [Power Query Formatter](https://www.powerqueryformatter.com/formatter) website
 
-### Use the workbook
+## To use the workbook
 * Windows
 * Microsoft Excel
 
