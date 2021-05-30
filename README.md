@@ -47,7 +47,8 @@ and [GQ_CoulAdj](./src/GQ_CoulAdj.pq). Everything else is for debug and developm
 
 # Context
 *This section explains what is Power Query and why it was used to
-implement CoulAdj. No instructions are contained here; feel free to skip.*
+implement CoulAdj. No instructions are contained here; feel free to skip
+to `Known Requirements`.*
 
 ## What Is Power Query?
 
@@ -110,7 +111,48 @@ are then loaded into the Excel workbook for further processing.
 
 ## Why Implement CoulAdj in Power Query
 
+Power Query is ill-suited for this task, because the intended use-case is to start
+with data in a tabular format stored in conventional formats like CSV, XML, and
+even web requests. And analyzing pixel-by-pixel an image is *far* from that use case.
 
+This created two major difficulties:
+* We had to study the BMP spec to implement a bitmap parser that would directly
+manipulate bytes.
+* For reasons too long to explain here (immutability and streaming semantics),
+we had to radically re-think our approach to the problem, because our first
+naïve implementation ended with a predicted runtime of 83 *days*. 
+
+    > After studying the language, we managed to get a runtime of ~8 minutes, and
+    after about 1 more year of undergrad courses in software engineering, we 
+    finally managed to get the runtime down to 15~30 *seconds* 🎉
+
+However, contrary to all other implementations of CoulAdj in other languages,
+Power Query has a massive advantage: **the one-click refresh**.
+
+See, to extract the *region* adjacencies with another implementation, the
+process is something like this:
+1. Try to remember where I stored the program
+1. Hope that I left the git repo in a functional state
+1. Reboot to Linux because that's where I usually code these (long story)
+1. Re-learn how to run that CoulAdj program because it's been 6 months since
+the last time
+1. Run CoulAdj
+1. Reboot to Windows to use the new files with colour adjacencies
+1. Reboot to Linux because I forgot to put the new files in the shared drive
+1. Reboot to Windows after moving the new files in the shared drive
+1. Make sure the new files are where the workbook expects to find them
+1. Do the one-click on the Refresh button
+
+All other implementations are compared by how long it takes for them to
+compute the results, (step 5: *Run CoulAdj*) because everthing else stays the
+same. But not with Power Query.
+
+With Power Query, only the final step remains: *Do the one-click on the Refresh button*. 
+
+This means that the Power Query implementation isn't competing with, say, the
+2 seconds runtime of C++, or the 4 seconds with Java, but with the 5~15 
+*minutes* it takes with *any other* implementation to get ready
+to click the refresh button.
 
 
 
@@ -137,6 +179,9 @@ work on other versions. Excel 2016 may break. Excel 2019 will probably work.
 As of May 2021, and as far as I know, Excel for Mac will not work, 
 nor will Excel Online. I could be wrong about Mac, but don't get your hopes up.
 The phone app (apps?) will also not work.
+
+
+
 
 # Instructions
 These first instructions apply to both people who only want to read the code,
@@ -203,6 +248,9 @@ way.
 Their name starts with `GQ_Doc_`, and I used them to verify the examples I
 wrote in the user documentation.
 
+
+
+
 ## How to only read the code (with syntax colouring)
 The queries are in `./src`, where `./` is the root of the git
 repository, and where this `README.md` file is located.
@@ -223,6 +271,9 @@ processing or whatever. While I do prefer that you use Visual
 Studio Code if you can, I care more about you not being or
 feeling excluded because the only option I presented 
 was my text editor of choice.
+
+
+
 
 ## How to use the workbook
 
