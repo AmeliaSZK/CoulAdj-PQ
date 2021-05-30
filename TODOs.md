@@ -21,14 +21,14 @@
     * The "custom XML datas" are the Power Query queries, lolsob.
         * This even includes query groups!!
 * **IMPORTANT**
-    * [ ] Copy & rename the dev workbook
-    * [ ] Perform final inspection of showcase workbook
-        * [ ] Document Inspector
-        * [ ] Don't remove:
+    * [x] Copy & rename the dev workbook
+    * [x] Perform final inspection of showcase workbook
+        * [x] Document Inspector
+        * [x] Don't remove:
             * Hidden names (they're for loaded queries)
             * Custom XML (That "custom" XML is actually Power Query, lolsob
-        * [ ] Re-enable the recording of document properties on save
-        * [ ] Save & Close
-    * [ ] Allow showcase workbook to be tracked by Git
+        * [x] Re-enable the recording of document properties on save
+        * [x] Save & Close
+    * [x] Allow showcase workbook to be tracked by Git
 * [ ] Make the repo public
 * [ ] Take screenshots & tweet a glorious thread
