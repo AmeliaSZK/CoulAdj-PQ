@@ -10,6 +10,7 @@ let
             Documentation.AllowedValues = { false, true }
         ])
     ) as record meta [
+        Documentation.Author = "Amélia SZK",
         Documentation.Name = "GQ_CoulAdj",
         Documentation.LongDescription = 
         "<p>"

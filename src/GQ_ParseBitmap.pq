@@ -6,6 +6,7 @@ let
             Documentation.FieldCaption = "Bitmap Image File"
         ])
     ) as record meta [
+        Documentation.Author = "Amélia SZK",
         Documentation.Name = "GQ_ParseBitmap",
         Documentation.LongDescription = 
         "<p>"

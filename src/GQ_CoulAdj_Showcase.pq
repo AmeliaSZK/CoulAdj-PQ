@@ -1,4 +1,5 @@
 let
+    Documentation.Author = "Amélia SZK",
     // To make the showcase work, function arguments had to be converted to variables with a value
     #"~PARAMETERS~" = "This step is to have a separator in the list of steps in the GUI",
     // You can (and *should*) change this value with GQ_ImageUnderTest_Name
