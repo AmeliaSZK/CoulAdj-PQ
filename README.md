@@ -132,17 +132,17 @@ way.
 Their name starts with `GQ_Doc_`, and I used them to verify the examples I
 wrote in the user documentation.
 
-# How to only read the code (with syntax colouring)
+## How to only read the code (with syntax colouring)
 The queries are in `./src`, where `./` is the root of the git
 repository, and where this `README.md` file is located.
 
-## Visual Studio Code
+### Visual Studio Code
 1. Clone this repository
 1. Install the [Power Query / M Language](https://marketplace.visualstudio.com/items?itemName=PowerQuery.vscode-powerquery)
 extension
 1. Enjoy 😊
 
-## Power Query Formatter Website
+### Power Query Formatter Website
 1. Go to [https://www.powerqueryformatter.com/formatter](https://www.powerqueryformatter.com/formatter)
 1. In the main area, copy-paste the code of the query you want to read.
 1. Enjoy 😊
@@ -153,20 +153,50 @@ Studio Code if you can, I care more about you not being or
 feeling excluded because the only option I presented 
 was my text editor of choice.
 
+## How to use the workbook
 
+⚠️ **Privacy Warning**: To make the workbook functional, it *will* need to save the file path where it is located. 
+Anyone with a copy of your workbook will be able to 
+**retrieve the absolute file path to your workbook**.
 
-* Why public
-* Legalese
-* What (short~medium)
-* Requirements
-    * To read
-    * To run
-* Instructions
-    * To read with syntax colouring
-    * To import proprietary samples
-    * To run
-        * RepoRoot
-        * Security warning?
+1. Acquire this repository. Two options:
+    * A) Download the ZIP from Github (screenshot below)
+        1. Click on `Code`
+        1. Click on `Download ZIP`
+        1. Once downloaded, unzip (not shown in screenshot)
+    * B) Git clone with a terminal is also fine
+1. Open `CoulAdj-PQ_Showcase.xlsx`
+1. Follow the instructions found in the first worksheet
+
+![Downloading the ZIP on Github](./doc/Github-Download.png "How to download the ZIP on Github")
+
+The instructions in the workbook come with annotated screenshots.
+To see the screenshots before deciding if you're going to use the
+workbook, you can go look in the [doc/](./doc) folder in the Github repo.
+
+Excel will probably give you a security warning about 
+"external connections" when you open the workbook for the first
+time. You will have to click on Allow, or however it is called
+in English, to make the workbook work.
+
+I am not really sure what this is trying to warn against, since I
+often see this warning for my own workbooks that only connect to
+local files? My educated guess is that the danger is that a 
+malicious actor could make a query retrieve any file on your 
+computer (feasible), and then trick you into sending them back
+the workbook.
+
+I don't want to be flippant with the security warnings and tell you
+to "just trust me", but I also really want to be finally done with 
+these instructions, and the security discussion can get really
+long and convoluted with several qualifiers because nothing is
+ever simple in that space.
+
+Anywayz. The *actual* risk you encounter here is the one I 
+mentioned in the privacy warning above: The workbook will
+store the path to its location, and if you send your workbook
+to someone else, this person will be able to retrieve that path.
+
 
 
 
