@@ -36,5 +36,6 @@
         * [ ] Save & Close
         * [ ] Inspect the unzipped XML
     * [ ] Allow showcase workbook to be tracked by Git
+* [ ] License?!?
 * [ ] Make the repo public
 * [ ] Take screenshots & tweet a glorious thread
